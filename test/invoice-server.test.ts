@@ -12,7 +12,7 @@ import { authOptions } from '../invoice/server/auth'
 import { CatalogRepository } from '../invoice/server/catalog'
 import { serverConfig, type ServerConfig } from '../invoice/server/config'
 import { createPool } from '../invoice/server/database'
-import { MAX_JSON_BYTES } from '../invoice/server/http'
+import { handleErrors, MAX_JSON_BYTES } from '../invoice/server/http'
 import { migrate } from '../invoice/server/migrations'
 import { consumeRenderJob } from '../invoice/server/pdf'
 import { InvoiceRepository } from '../invoice/server/repository'
@@ -424,6 +424,27 @@ describe('authenticated routes', () => {
       owner,
     )
   })
+})
+it('returns actionable configuration errors without reflecting configured credentials', async () => {
+  const privateValue = 'private-configuration-marker'
+  for (const env of [
+    {},
+    {
+      DATABASE_URL: privateValue,
+      AUTH_SECRET: privateValue.repeat(2),
+      AUTH_BASE_URL: privateValue,
+    },
+  ]) {
+    const response = await handleErrors(async () => {
+      serverConfig(env)
+      return new Response()
+    })
+    expect(response.status).toBe(503)
+    const text = await response.text()
+    expect(text).toContain('invoice:migrate')
+    expect(text).toContain('invoice:user')
+    expect(text).not.toContain(privateValue)
+  }
 })
 it('rejects missing or insecure production configuration and inaccessible render tokens', () => {
   expect(() => serverConfig({})).toThrow('Configure')

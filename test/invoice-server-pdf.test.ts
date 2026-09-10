@@ -139,6 +139,51 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
     await rm(directory, { recursive: true, force: true })
   }, 30000)
 
+  it('serves login without configuration and explains setup through the auth endpoint', async () => {
+    const missingPort = await port()
+    const missingOrigin = `http://127.0.0.1:${missingPort}`
+    const child = spawn(process.execPath, ['dist-invoice/server/entry.mjs'], {
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        HOST: '127.0.0.1',
+        PORT: String(missingPort),
+        DATABASE_URL: '',
+        AUTH_SECRET: '',
+        AUTH_BASE_URL: '',
+      },
+      stdio: 'ignore',
+    })
+    try {
+      let response: Response | undefined
+      for (let attempt = 0; attempt < 80; attempt += 1) {
+        if (child.exitCode !== null)
+          throw new Error('Unconfigured app exited before serving login.')
+        try {
+          response = await fetch(missingOrigin + '/api/auth/get-session')
+          break
+        } catch {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+        }
+      }
+      expect(response?.status).toBe(503)
+      expect(await response?.json()).toMatchObject({
+        error: expect.stringContaining('invoice:user'),
+      })
+      expect((await fetch(missingOrigin + '/login')).status).toBe(200)
+    } finally {
+      if (child.exitCode === null)
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(() => child.kill('SIGKILL'), 5000)
+          child.once('exit', () => {
+            clearTimeout(timer)
+            resolve()
+          })
+          child.kill('SIGTERM')
+        })
+    }
+  }, 15000)
+
   it('renders the compiled hydrated template and serves only immutable owner-authenticated PDF bytes', async () => {
     const body = {
       reference: '',

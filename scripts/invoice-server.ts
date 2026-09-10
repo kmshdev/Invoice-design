@@ -6,8 +6,10 @@ import { loadLocalEnv } from './invoice-server-env'
 loadLocalEnv()
 const mode = process.argv[2] ?? 'dev'
 if (!['dev', 'start'].includes(mode)) throw new Error('Use invoice-server.ts dev or start.')
-if (mode === 'start') process.env.NODE_ENV ??= 'production'
-serverConfig()
+if (mode === 'start') {
+  process.env.NODE_ENV ??= 'production'
+  serverConfig()
+}
 const child = spawn(
   process.execPath,
   mode === 'dev'
