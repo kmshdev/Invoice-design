@@ -160,6 +160,7 @@ describe('Deterministic MDX template preview', () => {
     )
     expect(page).toContain("import { frontmatter } from '../content/invoice.mdx'")
     expect(page).toContain('parseInvoice(JSON.stringify(frontmatter))')
+    expect(page).toContain('export const prerender = true')
     expect(page).toMatch(/<InvoiceDocument[^>]*client:load/)
     expect(page).not.toMatch(
       /localStorage|sessionStorage|InvoiceStudio|import App|application\//,
