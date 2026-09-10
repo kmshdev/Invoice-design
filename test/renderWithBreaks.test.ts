@@ -5,7 +5,7 @@
  *
  * Copyright Oxide Computer Company
  */
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { renderWithBreaks } from '../components/src/asciidoc/index'
 

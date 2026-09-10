@@ -1,5 +1,4 @@
 import './index.css'
-
 import { useState } from 'react'
 
 import { Badge, Button, Checkbox, Spinner, Tabs } from '../components/src/ui'

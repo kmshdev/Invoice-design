@@ -5,5 +5,6 @@ import { parseInvoice } from '../model'
 
 const initialInvoice = parseInvoice(JSON.stringify(frontmatter))
 ---
+
 <App client:only="react" initialInvoice={initialInvoice} />
 <noscript>Enable JavaScript to edit and save invoices locally in your browser.</noscript>

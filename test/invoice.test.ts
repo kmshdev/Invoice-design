@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import InvoiceDocument from '../invoice/components/InvoiceDocument'
 import {
@@ -17,7 +17,13 @@ import {
 import { readTemplate, templateProse } from '../scripts/invoice-template.mjs'
 import seed from './fixtures/legacy-invoice.json'
 
-const statutorySeed = readTemplate().data
+const statutorySeed = parseInvoice(JSON.stringify(readTemplate().data))
+
+// Malformed-payload tests intentionally cross the typed Invoice boundary.
+function mutableRecord(value: unknown): Record<string, unknown> {
+  if (value === null || typeof value !== 'object') throw new Error('Expected an object')
+  return value as Record<string, unknown>
+}
 
 it('prints tables in block flow before totals and keeps payment together', () => {
   const css = readFileSync(new URL('../invoice/styles.css', import.meta.url), 'utf8')
@@ -210,7 +216,7 @@ describe('Statutory export invoice', () => {
       'HDFCINBBXXX',
     ])
       expect(html).toContain(text)
-    expect(html.indexOf(statutorySeed.declaration)).toBeLessThan(html.indexOf('[ From ]'))
+    expect(html.indexOf(statutorySeed.declaration!)).toBeLessThan(html.indexOf('[ From ]'))
     expect(html).not.toContain('border:')
   })
   it('retains the reference frame, dashed rules, seller header, and compact total separator', () => {
@@ -296,7 +302,7 @@ describe('Tax identity validation', () => {
     ['from', 'pan', null],
   ])('rejects %s.%s = %s in both forms and imports', (party, field, value) => {
     const invoice = structuredClone(statutorySeed)
-    invoice[party][field] = value
+    mutableRecord(mutableRecord(invoice)[String(party)])[String(field)] = value
     expect(validateInvoice(invoice).length).toBeGreaterThan(0)
     expect(() => parseInvoice(JSON.stringify(invoice))).toThrow()
   })
@@ -305,7 +311,7 @@ describe('Tax identity validation', () => {
     expect(validateInvoice(invoice)).toEqual([])
     delete invoice.from.pan
     expect(validateInvoice(invoice)).toEqual([])
-    delete invoice.billTo.taxId
+    delete mutableRecord(invoice.billTo).taxId
     expect(validateInvoice(invoice).some((issue) => issue.path === 'billTo.taxId')).toBe(
       true,
     )
@@ -384,7 +390,9 @@ describe('Every declared field has runtime checks', () => {
     const data = structuredClone(statutorySeed)
     const keys = path.split('.')
     const key = keys.pop()!
-    const parent = keys.reduce((value, part) => value[part], data)
+    const parent = mutableRecord(
+      keys.reduce<unknown>((value, part) => mutableRecord(value)[part], data),
+    )
     delete parent[key]
     expect(validateInvoice(data).some((issue) => issue.path === path)).toBe(true)
   })
@@ -392,7 +400,9 @@ describe('Every declared field has runtime checks', () => {
     const data = structuredClone(statutorySeed)
     const keys = path.split('.')
     const key = keys.pop()!
-    const parent = keys.reduce((value, part) => value[part], data)
+    const parent = mutableRecord(
+      keys.reduce<unknown>((value, part) => mutableRecord(value)[part], data),
+    )
     parent[key] = []
     expect(validateInvoice(data).some((issue) => issue.path === path)).toBe(true)
   })
@@ -447,7 +457,7 @@ describe('Five-column table and secondary amounts', () => {
     { currency: 'INR', value: 1000000000001 },
   ])('rejects invalid secondary amounts %j', (secondaryAmount) => {
     const invoice = structuredClone(statutorySeed)
-    invoice.items[0].secondaryAmount = secondaryAmount
+    mutableRecord(invoice.items[0]).secondaryAmount = secondaryAmount
     expect(
       validateInvoice(invoice).some((issue) =>
         issue.path.startsWith('items.0.secondaryAmount'),
