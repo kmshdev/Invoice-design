@@ -32,6 +32,19 @@
   table-layout: fixed;
   font-size: inherit;
 }
+/* Budget the fixed A4 columns in glyphs plus the actual Stisla cell insets. */
+.invoice-sheet .invoice-column-sac {
+  width: calc(9ch + 2 * var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-column-quantity {
+  width: calc(9ch + 2 * var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-column-price {
+  width: calc(14ch + 2 * var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-column-amount {
+  width: calc(15ch + var(--table-cell-padding-inline));
+}
 .invoice-sheet .invoice-table tbody {
   height: 16em;
 }
@@ -43,6 +56,14 @@
 }
 .invoice-sheet .invoice-table th {
   padding-block: 0.333333em;
+}
+.invoice-sheet .table-label {
+  display: block;
+  white-space: nowrap;
+}
+.invoice-sheet .table-sublabel {
+  display: block;
+  color: var(--document-muted);
 }
 .invoice-sheet .invoice-table th:first-child,
 .invoice-sheet .invoice-table td:first-child {

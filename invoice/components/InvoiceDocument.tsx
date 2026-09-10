@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 
 import {
+  addressText,
   displayDate,
   dueDate,
+  exchangeNote,
   money,
   secondaryMoney,
+  secondaryValue,
   totals,
   type Invoice,
   type Party,
 } from '../model'
+import { quantityLabel, sharedUnit, tableNumber } from '../presentation'
 import WrappedText from './WrappedText'
 
 function useRuleLength(vertical = false) {
@@ -79,7 +83,7 @@ function PartyBlock({
     <section className="invoice-party">
       <h2>[ {title} ]</h2>
       <strong>{party.name || 'Business name'}</strong>
-      <WrappedText text={party.address} />
+      <WrappedText text={addressText(party.address)} />
       {party.taxId && (
         <div>
           {party.taxIdLabel ||
@@ -118,6 +122,11 @@ export default function InvoiceDocument({
   const amount = totals(invoice)
   const tax = invoice.taxLabel || 'VAT'
   const hasSac = invoice.items.some((item) => item.sac)
+  const unit = sharedUnit(invoice.items)
+  const secondaryAmounts = invoice.items.map((item) =>
+    secondaryValue(item, invoice.currency),
+  )
+  const note = exchangeNote(invoice)
   return (
     <article
       className={`invoice-sheet ${light ? 'paper-light' : ''}`}
@@ -158,24 +167,46 @@ export default function InvoiceDocument({
         <div className="invoice-items">
           <table className="table--seamless invoice-table table">
             <colgroup>
-              {(hasSac ? [32, 12, 13, 21, 22] : [43, 13, 22, 22]).map((width, index) => (
-                <col key={index} style={{ width: `${width}%` }} />
-              ))}
+              <col />
+              {hasSac && <col className="invoice-column-sac" />}
+              <col className="invoice-column-quantity" />
+              <col className="invoice-column-price" />
+              <col className="invoice-column-amount" />
             </colgroup>
             <thead>
-              <tr className="table-divider">
+              <tr className="table-divider" aria-hidden="true">
                 <td colSpan={hasSac ? 5 : 4}>
                   <TextDivider />
                 </td>
               </tr>
               <tr>
-                <th scope="col">Description</th>
-                {hasSac && <th scope="col">SAC Code</th>}
-                <th scope="col">Qty</th>
-                <th scope="col">Unit Price</th>
-                <th scope="col">Amount</th>
+                <th scope="col">
+                  <span className="table-label">Description</span>
+                </th>
+                {hasSac && (
+                  <th scope="col">
+                    <span className="table-label">SAC Code</span>
+                  </th>
+                )}
+                <th scope="col">
+                  <span className="table-label">Qty</span>
+                  {unit && (
+                    <>
+                      {' '}
+                      <span className="table-sublabel">({unit})</span>
+                    </>
+                  )}
+                </th>
+                <th scope="col">
+                  <span className="table-label">Unit price</span>{' '}
+                  <span className="table-sublabel">({invoice.currency})</span>
+                </th>
+                <th scope="col">
+                  <span className="table-label">Amount</span>{' '}
+                  <span className="table-sublabel">({invoice.currency})</span>
+                </th>
               </tr>
-              <tr className="table-divider">
+              <tr className="table-divider" aria-hidden="true">
                 <td colSpan={hasSac ? 5 : 4}>
                   <TextDivider />
                 </td>
@@ -197,22 +228,21 @@ export default function InvoiceDocument({
                     )}
                   </td>
                   {hasSac && <td>{item.sac || '—'}</td>}
-                  <td>
-                    {item.quantity}
-                    {item.unit && <> {item.unit}</>}
+                  <td aria-label={unit ? quantityLabel(item) : undefined}>
+                    {unit ? item.quantity : quantityLabel(item)}
                   </td>
                   <td>
                     <span className="invoice-money">
-                      {money(item.unitPrice, invoice.currency, 20)}
+                      {tableNumber(item.unitPrice, invoice.currency, 20)}
                     </span>
                   </td>
                   <td>
                     <span className="invoice-money">
-                      {money(amount.lines[i], invoice.currency)}
+                      {tableNumber(amount.lines[i], invoice.currency)}
                     </span>
-                    {item.secondaryAmount && (
+                    {secondaryAmounts[i] && (
                       <span className="invoice-money item-detail invoice-type-muted">
-                        {secondaryMoney(item.secondaryAmount)}
+                        {secondaryMoney(secondaryAmounts[i]!)}
                       </span>
                     )}
                   </td>
@@ -248,9 +278,7 @@ export default function InvoiceDocument({
               <dd>{money(amount.total, invoice.currency)}</dd>
             </div>
           </dl>
-          {invoice.exchangeNote && (
-            <p className="invoice-exchange">{invoice.exchangeNote}</p>
-          )}
+          {note && <p className="invoice-exchange">{note}</p>}
         </section>
         <footer className="invoice-payment">
           <h2>[ Payment ]</h2>
