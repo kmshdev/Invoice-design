@@ -17,7 +17,7 @@ const compat = new FlatCompat({
 })
 
 export default defineConfig([
-  globalIgnores(['**/*.js', '**/**/*.js', '**/*.json']),
+  globalIgnores(['**/*.js', '**/**/*.js', '**/*.json', 'invoice/.astro/**']),
   {
     extends: compat.extends('plugin:@typescript-eslint/recommended', 'prettier'),
 

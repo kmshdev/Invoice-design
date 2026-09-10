@@ -1,0 +1,29 @@
+{
+  "reference": "WELL-2026-0417",
+  "brand": "Well",
+  "issued": "2026-06-12",
+  "paymentTerms": 14,
+  "currency": "EUR",
+  "from": {
+    "name": "Wellapp SAS",
+    "address": "15 Rue Raynouard\n75016 Paris\nFrance",
+    "taxId": "FR48877641365"
+  },
+  "billTo": {
+    "name": "Ferrari S.p.A.",
+    "address": "Via Abetone Inferiore 4\n41053 Maranello\nItaly",
+    "taxId": "IT00159560366"
+  },
+  "items": [
+    { "id": "platform", "description": "Well Platform - Team", "detail": "112 seats, 1 Jun 2026 to 30 Jun 2026", "quantity": 112, "unitPrice": 21.04, "vat": 20 },
+    { "id": "connector", "description": "Connector sync - metered", "detail": "48,200 records ingested above the plan allowance", "quantity": 48.2, "unitPrice": 3.5, "vat": 20 },
+    { "id": "onboarding", "description": "Onboarding and data migration", "detail": "One-off implementation, delivered 4 Jun 2026", "quantity": 1, "unitPrice": 1450, "vat": 20 }
+  ],
+  "payment": {
+    "beneficiary": "Wellapp SAS",
+    "iban": "FR76 3000 4008 2800 0123 4567 890",
+    "bic": "BNPAFRPP",
+    "bank": "BNP Paribas"
+  },
+  "notes": "Please include the invoice reference with your payment."
+}

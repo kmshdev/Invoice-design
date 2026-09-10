@@ -1,7 +1,26 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# Dependencies and tool caches (including nested apps)
+node_modules/
+.vite/
+.astro/
+coverage/
+.tools/
+*.tsbuildinfo
+.oxlintcache
+
+# Local databases and credentials
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.pem
+*.key
 
 # IDEs and editors
 /.idea
@@ -43,3 +62,9 @@ components/dist
 /color-gen/dist
 
 /preview/dist
+/dist-invoice
+
+/invoice/.astro
+
+# Project-local prose lint tooling
+/.tools/
