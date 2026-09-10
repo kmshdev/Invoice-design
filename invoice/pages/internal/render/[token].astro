@@ -1,0 +1,15 @@
+---
+import InvoiceDocument from '../../../components/InvoiceDocument'
+import StudioLayout from '../../../layouts/StudioLayout.astro'
+import { consumeRenderJob } from '../../../server/pdf'
+
+const invoice = consumeRenderJob(Astro.params.token)
+Astro.response.headers.set('Cache-Control', 'no-store')
+Astro.response.headers.set('Referrer-Policy', 'no-referrer')
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
+if (!invoice) return new Response('Not found', { status: 404 })
+---
+
+<StudioLayout title="Invoice print job">
+  <InvoiceDocument invoice={invoice} light={true} client:load />
+</StudioLayout>
