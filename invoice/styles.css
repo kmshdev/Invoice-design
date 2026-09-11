@@ -3,6 +3,7 @@
 @import '@stisla/style/button.css';
 @import '@stisla/style/table.css';
 @import './typography.css';
+@import './editor/workspace.css';
 
 @font-face {
   font-family: 'Berkeley Mono';

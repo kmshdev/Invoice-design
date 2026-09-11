@@ -9,13 +9,14 @@ taxIdLabel: GSTIN
 declaration:
   SUPPLY MEANT FOR EXPORT UNDER BOND OR LETTER OF UNDERTAKING WITHOUT PAYMENT OF INTEGRATED
   TAX
-exchangeNote: '(Agreed Exchange Rate: AED 1 = INR 25.7 | Total INR: 3,25,000)'
 from:
   name: Keshav Mishra
-  address: |-
-    House No. 659, Sector 3
-    Vasundhara, Ghaziabad
-    U.P., India, PIN: 201012
+  address:
+    line1: House No. 659, Sector 3
+    line2: Vasundhara, Ghaziabad
+    region: U.P.
+    country: India
+    postalCode: '201012'
   taxId: 09DCNPM8210C1ZL
   taxIdType: gstin
   taxIdLabel: GSTIN
@@ -23,10 +24,12 @@ from:
   panLabel: TAXID (PAN)
 billTo:
   name: Meeshu Fintech-FZCO
-  address: |-
-    Building A1, Dubai Digital Park,
-    Dubai Silicon Oasis,
-    Dubai, UAE
+  address:
+    line1: Building A1, Dubai Digital Park
+    line2: Dubai Silicon Oasis
+    region: Dubai
+    country: UAE
+    postalCode: ''
   taxId: '105071208000001'
   taxIdType: uae-trn
   taxIdLabel: TRN
@@ -37,6 +40,16 @@ items:
     secondaryAmount:
       currency: INR
       value: 325000
+      mode: agreed
+      rate: 25.7
+      basis:
+        quantity: 1
+        unitPrice: 12645.91
+        currency: AED
+        vat: 0
+        rate: 25.7
+        secondaryCurrency: INR
+        value: 325000
     sac: '998314'
     quantity: 1
     unit: month

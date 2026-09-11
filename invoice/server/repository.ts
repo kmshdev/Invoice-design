@@ -70,7 +70,11 @@ export class InvoiceRepository {
   constructor(
     private readonly database: pg.Pool,
     private readonly renderPdf: PdfRenderer,
-  ) {}
+    private readonly numberPrefix = 'INV',
+  ) {
+    if (!/^[A-Z0-9]{1,4}$/.test(numberPrefix))
+      throw new Error('Invalid invoice number prefix.')
+  }
   async list(owner: string, cursor?: string): Promise<InvoiceList> {
     let before: { createdAt: string; id: string } | undefined
     if (cursor) {
@@ -222,8 +226,8 @@ export class InvoiceRepository {
       }
       if (row.revision !== revision) throw conflict()
       const data = parseDraft(row.data)
-      // The invoice date determines its fiscal numbering year, never the caller's reference.
-      const issues = issuanceProblems({ ...data, reference: 'PENDING' })
+      // The invoice date determines the calendar-year series, never the caller's reference.
+      const issues = issuanceProblems(data)
       if (issues.length)
         throw new HttpError(
           422,
@@ -237,8 +241,13 @@ export class InvoiceRepository {
       )
       const snapshot = {
         ...data,
-        reference: `KM-${year}-${String(counter.rows[0].last_number).padStart(4, '0')}`,
+        reference: `${this.numberPrefix}-${year}-${String(counter.rows[0].last_number).padStart(4, '0')}`,
       }
+      if (snapshot.reference.length > 16)
+        throw new HttpError(
+          422,
+          'This invoice number series has reached its 16-character limit.',
+        )
       const pdf = await this.renderPdf(structuredClone(snapshot))
       if (
         pdf.length < 8 ||

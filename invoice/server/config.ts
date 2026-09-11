@@ -14,6 +14,15 @@ export interface ServerConfig {
   production: boolean
 }
 
+export function invoiceNumberPrefix(env: NodeJS.ProcessEnv = process.env) {
+  const prefix = env.INVOICE_NUMBER_PREFIX || 'INV'
+  if (!/^[A-Z0-9]{1,4}$/.test(prefix))
+    throw setupError(
+      'INVOICE_NUMBER_PREFIX must contain one to four uppercase letters or digits.',
+    )
+  return prefix
+}
+
 export function serverConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const { DATABASE_URL, AUTH_SECRET, AUTH_BASE_URL } = env
   if (!DATABASE_URL || !AUTH_SECRET || !AUTH_BASE_URL) {

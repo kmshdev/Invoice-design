@@ -72,6 +72,7 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
           DATABASE_URL: config.databaseUrl,
           AUTH_SECRET: config.authSecret,
           AUTH_BASE_URL: origin,
+          INVOICE_NUMBER_PREFIX: 'KM',
           INVOICE_ADMIN_EMAIL: email,
           INVOICE_ADMIN_NAME: 'PDF test owner',
         },
@@ -88,6 +89,7 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
         DATABASE_URL: config.databaseUrl,
         AUTH_SECRET: config.authSecret,
         AUTH_BASE_URL: origin,
+        INVOICE_NUMBER_PREFIX: 'KM',
         INVOICE_RENDER_ORIGIN: origin,
         INVOICE_RUNTIME_DIR: path.resolve(directory, 'print'),
       },
@@ -224,6 +226,7 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
     })
     const first = await call(`/api/invoices/${draft.id}/pdf`)
     expect(first.headers.get('content-type')).toBe('application/pdf')
+    expect(first.headers.get('content-disposition')).toContain('attachment;')
     const bytes = Buffer.from(await first.arrayBuffer())
     expect(bytes.subarray(0, 5).toString()).toBe('%PDF-')
     expect(bytes.length).toBeGreaterThan(10000)
@@ -235,6 +238,9 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
       createHash('sha256').update(second).digest('hex'),
     )
     expect((await fetch(`${origin}/api/invoices/${draft.id}/pdf`)).status).toBe(401)
+    const inline = await call(`/api/invoices/${draft.id}/pdf?inline=1`)
+    expect(inline.headers.get('content-disposition')).toContain('inline;')
+    expect(inline.headers.get('x-frame-options')).toBe('SAMEORIGIN')
     expect(
       (await fetch(`${origin}/internal/render/${randomBytes(32).toString('hex')}`)).status,
     ).toBe(404)

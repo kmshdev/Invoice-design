@@ -41,7 +41,6 @@ coverage/
 
 # misc
 /connect.lock
-/coverage
 *.log
 /typings
 .env
@@ -63,8 +62,3 @@ components/dist
 
 /preview/dist
 /dist-invoice
-
-/invoice/.astro
-
-# Project-local prose lint tooling
-/.tools/

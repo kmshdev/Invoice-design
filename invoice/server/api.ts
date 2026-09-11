@@ -1,6 +1,6 @@
 import { getSession } from './auth'
 import { CatalogRepository } from './catalog'
-import { serverConfig } from './config'
+import { invoiceNumberPrefix, serverConfig } from './config'
 import { getPool } from './database'
 import { HttpError } from './errors'
 import { checkOrigin, handleErrors, invoiceId, json, readJson } from './http'
@@ -54,12 +54,13 @@ export function createApi(deps: Dependencies) {
       requireRevision(body.revision)
       return json(await deps.invoices().issue(owner, invoiceId(params.id), body.revision))
     }),
-    pdf: authenticated(async ({ params }, owner) => {
+    pdf: authenticated(async ({ params, url }, owner) => {
       const result = await deps.invoices().pdf(owner, invoiceId(params.id))
       return new Response(new Uint8Array(result.bytes), {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="${result.reference.replace(/[^\w-]/g, '_')}.pdf"`,
+          'Content-Disposition': `${url.searchParams.get('inline') === '1' ? 'inline' : 'attachment'}; filename="${result.reference.replace(/[^\w-]/g, '_')}.pdf"`,
+          'X-Frame-Options': 'SAMEORIGIN',
           'Content-Length': String(result.bytes.length),
           'Cache-Control': 'private, no-store',
           'X-Content-Type-Options': 'nosniff',
@@ -78,6 +79,6 @@ export function createApi(deps: Dependencies) {
 export const api = createApi({
   session: getSession,
   origin: () => serverConfig().baseURL,
-  invoices: () => new InvoiceRepository(getPool(), renderInvoicePdf),
+  invoices: () => new InvoiceRepository(getPool(), renderInvoicePdf, invoiceNumberPrefix()),
   catalog: () => new CatalogRepository(getPool()),
 })

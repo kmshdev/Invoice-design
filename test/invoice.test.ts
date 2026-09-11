@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vite-plus/test'
 
 import InvoiceDocument from '../invoice/components/InvoiceDocument'
 import {
+  addressText,
   dueDate,
+  exchangeNote,
   exportProblems,
   money,
   nextReference,
@@ -158,14 +160,14 @@ describe('Statutory export invoice', () => {
   const statutory = () => parseInvoice(JSON.stringify(statutorySeed))
   it('authors three address lines and aligns the parties to opposite edges', () => {
     const invoice = statutory()
-    expect(invoice.from.address.split('\n')).toEqual([
+    expect(addressText(invoice.from.address).split('\n')).toEqual([
       'House No. 659, Sector 3',
       'Vasundhara, Ghaziabad',
       'U.P., India, PIN: 201012',
     ])
-    expect(invoice.billTo.address.split('\n')).toEqual([
-      'Building A1, Dubai Digital Park,',
-      'Dubai Silicon Oasis,',
+    expect(addressText(invoice.billTo.address).split('\n')).toEqual([
+      'Building A1, Dubai Digital Park',
+      'Dubai Silicon Oasis',
       'Dubai, UAE',
     ])
     const css = readFileSync(new URL('../invoice/styles.css', import.meta.url), 'utf8')
@@ -208,7 +210,7 @@ describe('Statutory export invoice', () => {
       '1 month',
       'Subtotal excl. IGST',
       'IGST 0%',
-      statutorySeed.exchangeNote,
+      exchangeNote(statutorySeed),
       'KESHAV MISHRA',
       '50100327628130',
       'HDFC Bank, Ghaziabad Vasundhara',
@@ -247,7 +249,7 @@ describe('Statutory export invoice', () => {
     invoice.payment.accountNumber = 'EDITED-ACCOUNT'
     invoice.declaration = 'Edited declaration'
     expect(totals(invoice)).toMatchObject({ vat: 2276.26, total: 14922.17 })
-    expect(invoice.exchangeNote).toBe(statutorySeed.exchangeNote)
+    expect(exchangeNote(invoice)).toBe(exchangeNote(statutorySeed))
     expect(parseInvoice(JSON.stringify(invoice))).toEqual(invoice)
     const html = renderToStaticMarkup(
       createElement(InvoiceDocument, { invoice, light: true }),
@@ -335,7 +337,9 @@ describe('Tax identity validation', () => {
   })
   it('keeps multiline source content and distinct per-party labels', () => {
     const invoice = parseInvoice(JSON.stringify(statutorySeed))
-    expect(invoice.from.address).toContain('Sector 3\nVasundhara, Ghaziabad\nU.P.')
+    expect(addressText(invoice.from.address)).toContain(
+      'Sector 3\nVasundhara, Ghaziabad\nU.P.',
+    )
     expect(invoice.from.taxIdLabel).toBe('GSTIN')
     expect(invoice.billTo.taxIdLabel).toBe('TRN')
     expect(parseInvoice(JSON.stringify(invoice))).toEqual(statutorySeed)

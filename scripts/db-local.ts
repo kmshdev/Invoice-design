@@ -69,7 +69,7 @@ async function main() {
   if (!existsSync(envFile)) {
     await writeFile(
       envFile,
-      `DATABASE_URL=postgresql://invoice_local:${settings.password}@127.0.0.1:${settings.port}/invoice_studio\nAUTH_SECRET=${randomBytes(48).toString('hex')}\nAUTH_BASE_URL=http://localhost:4321\nINVOICE_RENDER_ORIGIN=http://127.0.0.1:4321\n`,
+      `DATABASE_URL=postgresql://invoice_local:${settings.password}@127.0.0.1:${settings.port}/invoice_studio\nAUTH_SECRET=${randomBytes(48).toString('hex')}\nAUTH_BASE_URL=http://localhost:4321\nINVOICE_NUMBER_PREFIX=KM\nINVOICE_RENDER_ORIGIN=http://127.0.0.1:4321\n`,
       { flag: 'wx', mode: 0o600 },
     )
     console.log(

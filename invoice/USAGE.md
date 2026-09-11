@@ -1,6 +1,16 @@
 # Using Invoice Studio
 
-Invoice Studio is a local-first Astro application with a reusable React invoice editor island. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components, retaining the repository's Oxide icons. It is separate from the design-system showcase, which remains available with `vp run preview:dev`.
+Invoice Studio is an Astro application with a React editor, PostgreSQL invoice records, and authenticated workspaces. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components, retaining the repository's Oxide icons. It is separate from the design-system showcase, which remains available with `vp run preview:dev`.
+
+## Architecture boundaries
+
+- `domain/` owns runtime schemas, inferred TypeScript models, money calculations, semantic addresses, and issuance checks. `model.ts` is the public facade for those modules.
+- `application/` owns HTTP contracts, editor state, concurrency handling, and explicit browser recovery/import. It does not calculate taxes or access PostgreSQL directly.
+- `server/` owns authentication, owner-scoped persistence, transactional revisions/numbering, and immutable issued PDFs.
+- `editor/` owns forms, profile/preset controls, and workspace views. Save and Issue are distinct actions.
+- `components/InvoiceDocument.tsx` and document CSS render validated invoice values; they do not save records. `/template-preview` reads the MDX fixture directly, without accessing saved invoices.
+
+Business/client profiles and contract presets are reusable defaults. Applying them copies data into a draft; changing a profile or template never rewrites existing invoices. Issued invoices retain their original PDF, not a re-render using current source code.
 
 ## Run the app
 
@@ -19,37 +29,42 @@ Open the URL printed by Astro (normally `http://localhost:4321`). For a producti
 
 ## Create and export an invoice
 
-1. Edit the supplied Meeshu export invoice or choose **Meeshu export template** in the invoice library to add a fresh statutory template without changing any saved draft. **New invoice** instead retains the active draft's business, currency, terms, export particulars, and payment information, but clears the client and line items.
-2. Fill in **Details**, add services or products in **Line items**, and review **Payment**.
-3. Review the live document. Use the sun/moon controls to choose a light or dark document.
-4. Select **Export PDF**, then **Save as PDF** in your browser's print dialog. Use A4 paper, disable browser headers/footers, and enable background graphics for the dark document. Light mode is useful for economical printing.
-5. Select **Export JSON** below the preview to keep a portable backup. **Import invoice JSON** adds a file as a separate draft.
+1. Sign in and select an invoice, choose **New invoice**, or explicitly **Use Meeshu preset**. The workspace does not silently create or select a sample record. Each invoice has its own `/invoices/{id}` URL.
+2. Fill in **Details**, add services or products in **Line items**, and review **Payment**. Save reusable business/client/contract defaults through the defaults panel.
+3. **Save** writes the draft to PostgreSQL. Empty business fields can be saved; malformed data types cannot. Review field errors before issuing. A revision conflict preserves your edits and requires exporting/reloading rather than overwriting another user's changes.
+4. **Print draft** opens the browser's print dialog for working copies. **Issue invoice** assigns its final number and locks the data and original PDF. It requires a saved draft that passes issuance checks.
+5. **Original PDF** downloads the archived document. **Export JSON** provides portable data. **Import invoice JSON** creates a separate draft; it never modifies an existing issued invoice.
 
-Drafts automatically save in this browser's local storage. They are not synchronized across devices or browsers. Clearing site data removes them. Export backups before clearing data or changing the app's origin. No email delivery, recurring billing, or payment processing is performed.
+Browser storage is recovery assistance, not the invoice database. Recoverable unsaved edits are scoped to the signed-in account, invoice ID and saved revision. Restoration is explicit. Old browser-only invoices can be backed up and copied through **Import previous browser invoices**; invalid records are reported individually, retries are idempotent, and the original browser data is never deleted automatically. Browser storage remains origin-specific, so import separately from any old port/origin where records were created.
+
+No email delivery, recurring billing, or payment processing is performed.
 
 ## Edit content independently of the layout
 
-The single starting template lives in [`content/invoice.mdx`](content/invoice.mdx). Every invoice value is in its YAML frontmatter; presentation remains in React and CSS. Astro's official MDX integration compiles this actual MDX file, and `InvoiceStudio.astro` validates its frontmatter with `parseInvoice` before passing data to the editor. There is no second seed JSON. Use YAML literal blocks (`|-`) for addresses or descriptions to preserve intentional newlines. Quote dates and numeric-looking identifiers so they remain strings under Astro’s YAML parsing.
+The Meeshu design fixture lives in [`content/invoice.mdx`](content/invoice.mdx). Every example invoice value is in its YAML frontmatter; presentation remains in React and CSS. Astro's MDX integration compiles the file, and its frontmatter passes through the shared schema. There is no second seed JSON. Quote dates and numeric-looking identifiers so they remain strings under Astro's YAML parsing.
 
-This is a developer-maintained template, not a new runtime editing workflow. Rebuild after changing it. Browsers with existing drafts keep those drafts unchanged. Choose **Meeshu export template** to add the updated template alongside them, or explicitly edit an existing draft's identities in **Details**. Do not clear local storage to upgrade a draft.
+Open `/template-preview` while designing. It always renders the current MDX fixture, never browser drafts or server records; reload during development or rebuild for production. This route is a public, prerendered fixture: do not put other clients' private invoices in it. Use the authenticated editor for actual records. **Use Meeshu preset** explicitly creates a separate working invoice with today's date and an unassigned number. Changing this fixture is not a migration of existing records.
 
 The editor's terminal icon opens a JSON source editor. **Apply source** validates the document before updating the preview. Unapplied edits disable exports; switching away asks before discarding them. Imported text is data, not executable MDX, and React escapes all displayed content.
 
-The schema is defined by `Invoice` in [`model.ts`](model.ts):
+The runtime schemas in `domain/schema.ts` are the source of truth; TypeScript types are inferred from them and re-exported by [`model.ts`](model.ts):
 
 - `reference`, `brand`, `issued`, `paymentTerms`, and `currency`: document identity, issue date, net days, and currency.
-- `from` and `billTo`: business name, multiline address, and `taxId`. Optional `taxIdType` opts into `gstin` or `uae-trn` validation; omitted or `generic` keeps international/legacy IDs as text. Optional per-party `taxIdLabel` overrides the legacy invoice-wide label. Optional `pan` is a separate Indian TAXID, with an optional `panLabel`.
+- `from` and `billTo`: business name, address, and `taxId`. New addresses have `line1`, `line2`, `region`, `country`, and `postalCode` fields, formatted into semantic lines. Imported legacy address strings remain unchanged; no parser guesses their locality or country. Optional `taxIdType` opts into `gstin` or `uae-trn` checks at issuance; omitted or `generic` preserves international IDs as text. Optional per-party `taxIdLabel` overrides the invoice-wide label. Optional `pan` is a separate Indian TAXID with an optional `panLabel`.
 - The template seller has GSTIN **09DCNPM8210C1ZL**, separate TAXID (PAN) **DCNPM8210C**, and the client has TRN **105071208000001**. The visual prefix TRN is a label, not part of the stored 15-digit identifier. GSTIN and PAN are not interchangeable.
 - Optional `taxLabel`, `taxIdLabel`, `declaration`, and `exchangeNote`: displayed tax labels (IGST/GSTIN in the template), statutory export declaration, and agreed currency conversion text.
-- `items`: unique ID, description, detail, quantity, unit price, and tax percentage. The numeric tax field remains named `vat` for compatibility. Optional `sac` and `unit` display the SAC code and quantity unit. Tax stays in the editor and totals, not the table. Use a short `description` heading and supporting `detail`. Optional `secondaryAmount: { currency: INR, value: 325000 }` displays an independently agreed line amount beneath the primary amount (`INR 3,25,000`). Choose a secondary currency and enter its amount in Line items; choose None to remove it. Supported currencies and finite values from zero to 1,000,000,000,000 are validated. Secondary values do not affect totals or follow price/quantity edits; review them before issuing. They are not parsed from `exchangeNote`.
+- `items`: unique ID, short `description`, supporting `detail`, quantity, unit price, and tax percentage. The numeric tax field remains named `vat` for compatibility. `sac` is an identifier; `unit` describes quantity. Tax stays in the editor and totals, not the table. The header shows a shared quantity unit only when every row uses it; mixed units stay beside each row's quantity. Currency labels belong to the Unit price and Amount headers.
+- Optional `secondaryAmount` holds `currency`, `value`, `mode` (`agreed` or `derived`), optional `rate`, and a confirmed `basis` snapshot. Agreed amounts remain fixed and require review when their financial basis changes. Derived amounts follow quantity/price through decimal rounding but never reuse a rate for an unconfirmed currency pair. Use **Confirm amount and rate** after review. Older `{currency, value}` imports remain readable but require confirmation before issuance. Secondary values are not added to totals or parsed from prose notes.
 - `payment`: beneficiary, bank, and historical `iban`/`bic` strings; optional `accountNumber`, `ifsc`, and `swift` support Indian payment details. Empty fields are omitted from the document. Older JSON and stored drafts without the new optional fields remain valid.
 - `notes`: plain-text payment instructions.
 
-The app supports AED, EUR, USD, GBP, INR, CAD, AUD, and JPY. Dates use `YYYY-MM-DD` (2000–2099), terms are whole days from 0–365, VAT is 0–100%, and quantities/prices are non-negative and at most 1,000,000. Up to 100 items are supported. Every imported field and form update goes through the same runtime validator in `model.ts`, including optional text fields, numeric ranges, unique line IDs, and calendar dates. Invalid form edits remain visible with field errors but are not saved or used for the preview. Fix the errors to resume automatic saving. Exports are disabled until valid; leaving invalid edits asks before discarding them. Incomplete generic drafts can still be saved; PDF export additionally requires names, a reference, and usable items.
+The app supports AED, EUR, USD, GBP, INR, CAD, AUD, and JPY. Issue dates use `YYYY-MM-DD` (2000–2099); an empty date is allowed in a draft. Terms are whole days from 0–365, tax is 0–100%, and quantities/prices are non-negative and at most 1,000,000. Up to 100 items are supported. `parseDraftInvoice` checks safe data shape while allowing incomplete business values; `issuanceProblems` adds required-field, calendar, identifier and monetary checks. Historical `parseInvoice` retains strict import validation for fixtures. Shape-invalid edits remain visible but cannot replace saved records or the last valid preview. There is no automatic server saving. Issuance assigns the final reference instead of requiring a manually reserved number.
 
-GSTIN validation checks the 15-character Indian syntax and, when a separate PAN is supplied, their relationship. PAN checks its ten-character format; UAE TRN checks exactly 15 digits. Typed tax IDs cannot be empty; select generic for an untyped/incomplete identity. No unsolicited GST checksum check rejects or rewrites the supplied identifier. These checks do not certify tax registration. Bank fields are bounded strings displayed as supplied; no country-specific account, IBAN, SWIFT, or IFSC rules are imposed without country context.
+GSTIN validation checks the 15-character Indian syntax and, when a separate PAN is supplied, their relationship. PAN checks its ten-character format; UAE TRN checks exactly 15 digits. Typed tax IDs must be complete before issuance; drafts can retain incomplete entries. No unsolicited GST checksum check rejects or rewrites the supplied identifier. These checks do not certify tax registration. Bank fields are bounded strings displayed as supplied; no country-specific account, IBAN, SWIFT, or IFSC rules are imposed without country context.
 
-Line amounts are rounded to the currency's minor unit, then tax is calculated and rounded per rate group. JPY uses whole yen; other supported currencies use two decimals. The supplied example reconciles to **AED 12,645.91**, with **0% IGST**. The agreed exchange-rate/INR text is independently editable, not a calculated currency conversion; changing invoice amounts does not silently rewrite it. Review this text and the declaration before issuing an edited invoice. Confirm the rounding policy meets your jurisdiction's accounting requirements.
+Line amounts are rounded to the currency's minor unit, then tax is calculated and rounded per rate group. Aggregation stays in BigInt minor units. Issuance bounds the tax-inclusive total to 1,000,000,000,000 currency units; larger historical data can be retained but cannot be issued. JPY uses whole yen; other supported currencies use two decimals.
+
+The example has **AED 12,645.91**, **0% IGST**, and the contractually agreed **INR 3,25,000**. Multiplication by 25.7 gives INR 3,24,999.89 after rounding, a difference of INR 0.11. Generated exchange notes distinguish the agreed amount from the calculated equivalent; the agreed amount is not silently rewritten. Review the rate, amount and statutory wording before issuance. No jurisdiction-specific tax compliance certification is implied.
 
 ## Design and font
 

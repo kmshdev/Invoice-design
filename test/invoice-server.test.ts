@@ -10,7 +10,11 @@ import type { Invoice } from '../invoice/model'
 import { createApi } from '../invoice/server/api'
 import { authOptions } from '../invoice/server/auth'
 import { CatalogRepository } from '../invoice/server/catalog'
-import { serverConfig, type ServerConfig } from '../invoice/server/config'
+import {
+  invoiceNumberPrefix,
+  serverConfig,
+  type ServerConfig,
+} from '../invoice/server/config'
 import { createPool } from '../invoice/server/database'
 import { handleErrors, MAX_JSON_BYTES } from '../invoice/server/http'
 import { migrate } from '../invoice/server/migrations'
@@ -96,10 +100,14 @@ beforeAll(async () => {
     .getSetCookie()
     .map((value) => value.split(';')[0])
     .join('; ')
-  repository = new InvoiceRepository(pool, async (invoice) => {
-    renderCount += 1
-    return Buffer.from(`%PDF-1.7\n${invoice.reference}\n%%EOF`)
-  })
+  repository = new InvoiceRepository(
+    pool,
+    async (invoice) => {
+      renderCount += 1
+      return Buffer.from(`%PDF-1.7\n${invoice.reference}\n%%EOF`)
+    },
+    'KM',
+  )
 }, 60000)
 afterAll(async () => {
   await pool?.end()
@@ -217,9 +225,13 @@ it('issues once under concurrency, assigns transactional numbering and archives 
 })
 it('rolls back number allocation and issuance when PDF generation fails', async () => {
   const draft = await repository.create(owner, sample())
-  const failing = new InvoiceRepository(pool, async () => {
-    throw new Error('Renderer unavailable')
-  })
+  const failing = new InvoiceRepository(
+    pool,
+    async () => {
+      throw new Error('Renderer unavailable')
+    },
+    'KM',
+  )
   await expect(failing.issue(owner, draft.id, 1)).rejects.toThrow('Renderer unavailable')
   expect(await repository.get(owner, draft.id)).toMatchObject({
     revision: 1,
@@ -243,7 +255,7 @@ it('rolls back number allocation and issuance when PDF generation fails', async 
 })
 it('rejects invalid renderer output and unissued PDF downloads', async () => {
   const draft = await repository.create(owner, sample())
-  const invalid = new InvoiceRepository(pool, async () => Buffer.from('not PDF'))
+  const invalid = new InvoiceRepository(pool, async () => Buffer.from('not PDF'), 'KM')
   await expect(invalid.issue(owner, draft.id, 1)).rejects.toThrow('invalid or oversized')
   await expect(repository.pdf(owner, draft.id)).rejects.toMatchObject({ status: 409 })
   expect((await repository.get(owner, draft.id)).status).toBe('draft')
@@ -448,6 +460,11 @@ it('returns actionable configuration errors without reflecting configured creden
 })
 it('rejects missing or insecure production configuration and inaccessible render tokens', () => {
   expect(() => serverConfig({})).toThrow('Configure')
+  expect(invoiceNumberPrefix({})).toBe('INV')
+  expect(invoiceNumberPrefix({ INVOICE_NUMBER_PREFIX: 'KM' })).toBe('KM')
+  expect(() => invoiceNumberPrefix({ INVOICE_NUMBER_PREFIX: 'lowercase' })).toThrow(
+    'INVOICE_NUMBER_PREFIX',
+  )
   expect(() =>
     serverConfig({
       NODE_ENV: 'production',
