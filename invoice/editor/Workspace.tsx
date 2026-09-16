@@ -8,6 +8,7 @@ import DownloadIcon from '../../icons/react/DownloadOutline12Icon'
 import MoonIcon from '../../icons/react/Moon12Icon'
 import SunIcon from '../../icons/react/Sun12Icon'
 import { downloadFile, request } from '../application/client'
+import { suppressUnloadWarning } from '../application/unloadWarning'
 import { useInvoiceWorkspace } from '../application/useInvoiceWorkspace'
 import InvoiceDocument from '../components/InvoiceDocument'
 import {
@@ -64,6 +65,7 @@ export default function Workspace({
     if ((dirty || sourceDirty) && !window.confirm('Sign out with unsaved edits?')) return
     try {
       await request('/api/auth/sign-out', { method: 'POST', body: '{}' })
+      suppressUnloadWarning()
       location.assign('/login')
     } catch (cause) {
       workspace.setError(cause instanceof Error ? cause.message : 'Unable to sign out.')

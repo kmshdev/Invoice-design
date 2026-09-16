@@ -10,6 +10,7 @@ import {
   recoveryKey,
   type Recovery,
 } from './recovery'
+import { shouldWarnBeforeUnload, suppressUnloadWarning } from './unloadWarning'
 
 export function useInvoiceWorkspace(requestedId?: string) {
   const [records, setRecords] = useState<InvoiceRecord[]>([])
@@ -90,6 +91,7 @@ export function useInvoiceWorkspace(requestedId?: string) {
   useEffect(() => {
     if (!dirty) return
     const warn = (event: BeforeUnloadEvent) => {
+      if (!shouldWarnBeforeUnload()) return
       event.preventDefault()
     }
     window.addEventListener('beforeunload', warn)
@@ -222,6 +224,7 @@ export function useInvoiceWorkspace(requestedId?: string) {
         method: 'POST',
         body: JSON.stringify({ data: parseDraftInvoice(data), idempotencyKey }),
       })
+      suppressUnloadWarning()
       location.assign(`/invoices/${created.id}`)
     } catch (cause) {
       handleError(cause)

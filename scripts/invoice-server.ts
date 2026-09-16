@@ -23,12 +23,21 @@ const child = spawn(
     : ['dist-invoice/server/entry.mjs'],
   { stdio: 'inherit', env: { ...process.env, HOST: process.env.HOST ?? '127.0.0.1' } },
 )
-process.once('SIGINT', () => child.kill('SIGINT'))
-process.once('SIGTERM', () => child.kill('SIGTERM'))
+let forwardedSignal: NodeJS.Signals | undefined
+function forwardSignal(signal: NodeJS.Signals) {
+  forwardedSignal = signal
+  child.kill(signal)
+}
+process.once('SIGINT', () => forwardSignal('SIGINT'))
+process.once('SIGTERM', () => forwardSignal('SIGTERM'))
 child.once('error', () => {
   console.error('Invoice server could not start.')
   process.exitCode = 1
 })
 child.once('exit', (code, signal) => {
-  process.exitCode = signal ? 1 : (code ?? 1)
+  if (signal && signal !== forwardedSignal) {
+    process.kill(process.pid, signal)
+    return
+  }
+  process.exitCode = code ?? 0
 })

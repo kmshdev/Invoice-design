@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import CheckIcon from '../../icons/react/Checkmark12Icon'
 import DocumentIcon from '../../icons/react/Document16Icon'
 import CodeIcon from '../../icons/react/Terminal16Icon'
+import { shouldWarnBeforeUnload } from '../application/unloadWarning'
 import {
   currencies,
   displayDate,
@@ -40,11 +41,15 @@ export default function InvoiceEditor({
   useEffect(() => {
     if (!sourceDirty) return
     const warn = (event: BeforeUnloadEvent) => {
+      if (!shouldWarnBeforeUnload()) return
       event.preventDefault()
     }
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [sourceDirty])
+  useEffect(() => {
+    if (sourceMode && !sourceDirty) setSource(JSON.stringify(invoice, null, 2))
+  }, [invoice, sourceDirty, sourceMode])
   function changeMode(next: boolean) {
     if (sourceDirty && !window.confirm('Discard unapplied JSON changes?')) return
     setSourceMode(next)

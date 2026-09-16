@@ -20,10 +20,13 @@ Install [Vite+](https://viteplus.dev/guide/) once, open a fresh shell, and run `
 
 ```sh
 vp install --frozen-lockfile
+vp run invoice:browser
 vp run dev
 ```
 
 Open the URL printed by Astro (normally `http://localhost:4321`). For a production build, run `vp run invoice:build`; the static site is written to `dist-invoice/`.
+
+`vp run invoice:browser` installs the pinned Chromium binary used to generate immutable issued-invoice PDFs. Run it during both development and production provisioning, before starting the invoice server; package installation alone does not download the browser.
 
 `vp dev` and `vp build` are immutable Vite built-ins, **not** aliases for Astro or package scripts. Use `vp run dev` for Astro and `vp pack` (or `vp run build`) for this repository's design-system library. Existing npm script entry points still work. `vp run preview:dev` starts the design-system showcase; `vp run color-gen:dev` starts the color tool. Their builds use Vite 8 and native TypeScript path-alias resolution.
 
