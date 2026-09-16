@@ -63,6 +63,10 @@ describe('Schema-derived invoice boundaries', () => {
     expect(dueDate('invalid', 15)).toBe('')
     expect(dueDate('2026-02-31', 15)).toBe('')
     expect(displayDate('2026-02-31')).toBe('—')
+    for (const value of ['2026-99-99', '2026-00-01', '2026-01-00']) {
+      expect(dueDate(value, 15)).toBe('')
+      expect(displayDate(value)).toBe('—')
+    }
   })
   it('keeps blank drafts genuinely blank and independent without fake billable rows', () => {
     const first = createBlankInvoice()
