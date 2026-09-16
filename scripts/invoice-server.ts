@@ -29,6 +29,6 @@ child.once('error', () => {
   console.error('Invoice server could not start.')
   process.exitCode = 1
 })
-child.once('exit', (code) => {
-  process.exitCode = code ?? 0
+child.once('exit', (code, signal) => {
+  process.exitCode = signal ? 1 : (code ?? 1)
 })

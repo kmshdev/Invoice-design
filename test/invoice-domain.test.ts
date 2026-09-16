@@ -7,6 +7,7 @@ import {
   confirmSecondaryAmount,
   convertedLineValue,
   createBlankInvoice,
+  displayDate,
   draftInvoiceSchema,
   dueDate,
   exchangeNote,
@@ -60,6 +61,8 @@ describe('Schema-derived invoice boundaries', () => {
   it('returns an empty due date for blank or invalid issue dates', () => {
     expect(dueDate('', 15)).toBe('')
     expect(dueDate('invalid', 15)).toBe('')
+    expect(dueDate('2026-02-31', 15)).toBe('')
+    expect(displayDate('2026-02-31')).toBe('—')
   })
   it('keeps blank drafts genuinely blank and independent without fake billable rows', () => {
     const first = createBlankInvoice()

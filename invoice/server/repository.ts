@@ -88,7 +88,9 @@ export class InvoiceRepository {
           typeof parsed.createdAt !== 'string' ||
           typeof parsed.id !== 'string' ||
           !Number.isFinite(Date.parse(parsed.createdAt)) ||
-          !/^[a-f0-9-]{36}$/i.test(parsed.id)
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            parsed.id,
+          )
         )
           throw new Error()
         before = { createdAt: parsed.createdAt, id: parsed.id }

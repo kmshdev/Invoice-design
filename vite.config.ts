@@ -138,13 +138,16 @@ export default defineConfig({
         command: 'node scripts/check-package.mjs',
         dependsOn: ['build'],
       },
+      'invoice:server:check': {
+        command: 'vp run invoice:browser && vp run invoice:server:test',
+      },
       'check-all': {
         command: 'node -e "console.log(\'All toolchain checks passed\')"',
         dependsOn: [
           'check',
           'test',
           'invoice:check',
-          'invoice:build',
+          'invoice:server:check',
           'invoice:prose',
           'design-md:check',
           'astro:format:check',

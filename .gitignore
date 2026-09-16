@@ -10,6 +10,7 @@ coverage/
 .oxlintcache
 
 # Local databases and credentials
+.env
 .env.*
 !.env.example
 *.db
@@ -43,7 +44,6 @@ coverage/
 /connect.lock
 *.log
 /typings
-.env
 .eslintcache
 
 # System Files

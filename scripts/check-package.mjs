@@ -13,8 +13,27 @@ const archive = Array.isArray(result) ? result[0] : result[manifest.name]
 assert(archive, 'npm pack did not return this package')
 const files = new Set(archive.files.map(({ path }) => path))
 const entries = Object.entries(manifest.exports).filter(([name]) => !name.includes('*'))
+
+function exportTarget(value) {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const target = exportTarget(entry)
+      if (target) return target
+    }
+  } else if (value && typeof value === 'object') {
+    for (const entry of Object.values(value)) {
+      const target = exportTarget(entry)
+      if (target) return target
+    }
+  }
+  return undefined
+}
+
 for (const [name, target] of entries) {
-  const file = target.replace(/^\.\//, '')
+  const resolved = exportTarget(target)
+  assert.equal(typeof resolved, 'string', `Invalid export target: ${name}`)
+  const file = resolved.replace(/^\.\//, '')
   // Type-only and re-export-only entries have no mappings; their chunks carry the maps.
   const artifacts = [file, file.replace(/\.js$/, '.d.ts')]
   if (readFileSync(file, 'utf8').includes('//# sourceMappingURL='))

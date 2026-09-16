@@ -39,8 +39,9 @@ export function tableNumber(
   currency: string,
   maximumFractionDigits = currencyDigits(currency),
 ): string {
+  const minimumFractionDigits = Math.min(currencyDigits(currency), maximumFractionDigits)
   return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en-US', {
-    minimumFractionDigits: currencyDigits(currency),
+    minimumFractionDigits,
     maximumFractionDigits,
   }).format(value)
 }

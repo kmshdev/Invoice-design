@@ -154,7 +154,7 @@ export function useInvoiceWorkspace(requestedId?: string) {
     setRecord(saved)
     setValue(saved.data)
     setPreview(saved.data)
-    setRecords((current) => current.map((entry) => (entry.id === saved.id ? saved : entry)))
+    setRecords((current) => [saved, ...current.filter((entry) => entry.id !== saved.id)])
     setConflict(false)
     clearRecovery()
   }

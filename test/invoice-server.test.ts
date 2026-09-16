@@ -319,6 +319,10 @@ it('bounds invoice lists and paginates equal timestamps without gaps', async () 
   expect(new Set([...first.records, ...second.records].map((row) => row.id)).size).toBe(106)
   expect(second.nextCursor).toBeUndefined()
   await expect(repository.list(id, 'invalid')).rejects.toMatchObject({ status: 400 })
+  const malformedCursor = Buffer.from(
+    JSON.stringify({ createdAt: new Date().toISOString(), id: '-'.repeat(36) }),
+  ).toString('base64url')
+  await expect(repository.list(id, malformedCursor)).rejects.toMatchObject({ status: 400 })
 })
 
 describe('authenticated routes', () => {

@@ -117,6 +117,7 @@ describe('Invoice table presentation', () => {
     expect(tableNumber(325000, 'INR')).toBe('3,25,000.00')
     expect(tableNumber(10, 'USD')).toBe('10.00')
     expect(tableNumber(10, 'JPY')).toBe('10')
+    expect(tableNumber(10, 'USD', 0)).toBe('10')
   })
 
   it.each([
