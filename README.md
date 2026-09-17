@@ -1,33 +1,36 @@
 # Invoice Studio
 
-A private invoice editor and authenticated backend-for-frontend (BFF), built with
-Astro, React, PostgreSQL, and Better Auth. Draft editing, issuance, recovery, and
+An open-beta invoice editor and authenticated backend-for-frontend (BFF), built with
+Astro, React, Neon PostgreSQL, managed Better Auth, and private S3-compatible storage. Draft editing, issuance, recovery, and
 immutable PDF exports live in one application—not a publishable design-system fork.
 
 ## Quick start
 
-Use Node 24.21.0 and npm 12.0.2 (pinned in `package.json`).
+Use Node 24.19 or newer within Node 24, and npm 11 or 12. Development and CI use
+Node 24.21.0 and npm 12.0.2; Vercel's compatible bundled versions are also supported.
 
 ```sh
 npm ci
 npm run invoice:browser
-npm run invoice:db
+cp invoice/.env.example invoice/.env.local
 ```
 
-Keep the local database process running. In another terminal:
+Fill the ignored environment file with your Neon branch's database, managed-auth,
+and private storage settings. Register the app origin in Neon Auth's trusted domains.
+Then run:
 
 ```sh
 npm run invoice:migrate
-npm run invoice:user
+npm run invoice:pdf:build
 npm run dev
 ```
 
-Open http://localhost:4321. User creation is interactive; there is no default login.
-The database helper creates private local configuration only when absent. Do not
-commit credentials or reuse the development database for production.
+Open http://localhost:4321 and create an account or sign in. Registration is open;
+every invoice and catalog operation remains scoped to the authenticated account.
+There is no default login. Use a separate Neon branch for development, not production.
 
-See [the runbook](invoice/USAGE.md) for configuration, PostgreSQL setup, account
-provisioning, PDF requirements, and development/testing details.
+See [the runbook](invoice/USAGE.md) for all environment variables, migration safety,
+PDF requirements, Vercel configuration, and development/testing details.
 
 ## Architecture
 
@@ -36,7 +39,8 @@ provisioning, PDF requirements, and development/testing details.
 - `invoice/editor/` and `invoice/components/`: editor and printable document.
 - `invoice/server/`: authentication, persistence, migrations, API handlers, and PDF rendering.
 - `invoice/pages/`: thin Astro route adapters and page entry points.
-- `scripts/`: local database, account, server, and verification commands.
+- `invoice/pdf/`: self-contained browser renderer reusing the same document and font.
+- `scripts/`: database migrations, local server, and verification commands.
 
 The app consumes the pinned `@oxide/design-system` package through its public
 `icons/react` export. Stisla supplies the existing theme/button/table styles; app-owned
@@ -54,7 +58,8 @@ npm run check:all
 The acceptance gate runs lint/format/type checks, domain/client/server tests, template
 prose checks, and built-server tests with real PostgreSQL, Chromium PDF rendering,
 and editor browser workflows. Editor tests mock API responses to deterministically
-exercise conflicts and recovery; server/PDF tests exercise the real API and database.
+exercise conflicts and recovery; server/PDF tests exercise the real API, PostgreSQL,
+and Chromium with local auth/S3 protocol fixtures. They need no cloud credentials.
 `npm test` is the faster suite; use `npm run invoice:server:test` for the explicit live
 server/PDF/editor gate. To run editor browser checks against a running local dev server:
 
@@ -70,8 +75,16 @@ npm start
 ```
 
 Configure the environment and apply migrations as described in the runbook first.
-The server output is `dist-invoice/`; there is no npm release artifact. This package is
-`private`, and CI never publishes canaries or requires registry publishing credentials.
+Standalone server output is `dist-invoice/`. On Vercel, `VERCEL=1` selects the Vercel
+adapter and emits `.vercel/output/`, including Chromium and the self-contained renderer.
+PDF downloads redirect to short-lived signed URLs after ownership and integrity checks,
+so large documents do not pass through Vercel's response-size limit.
+
+There is no npm release artifact. `private: true` prevents accidental npm publication;
+it does not restrict beta registration. CI never publishes canaries.
+
+Legacy self-hosted-auth databases are not silently migrated: account-ID mapping and
+archive transfer require an explicit migration. Existing data is left untouched.
 
 ## License
 

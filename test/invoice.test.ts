@@ -122,7 +122,7 @@ describe('Invoice calculations', () => {
     expect(dueDate('2026-06-12', 14)).toBe('2026-06-26')
     expect(dueDate('2026-12-25', 14)).toBe('2027-01-08')
     expect(dueDate('2028-02-28', 1)).toBe('2028-02-29')
-    expect(nextReference('WELL-2026-0417')).toBe('WELL-2026-0418')
+    expect(nextReference('DEMO-2026-0417')).toBe('DEMO-2026-0418')
     expect(nextReference('DRAFT')).toBe('DRAFT-001')
   })
 })
@@ -161,13 +161,13 @@ describe('Statutory export invoice', () => {
   it('authors three address lines and aligns the parties to opposite edges', () => {
     const invoice = statutory()
     expect(addressText(invoice.from.address).split('\n')).toEqual([
-      'House No. 659, Sector 3',
-      'Vasundhara, Ghaziabad',
-      'U.P., India, PIN: 201012',
+      '42 Example Avenue',
+      'Demo District, Sample City',
+      'Example State, India, PIN: 400001',
     ])
     expect(addressText(invoice.billTo.address).split('\n')).toEqual([
-      'Building A1, Dubai Digital Park',
-      'Dubai Silicon Oasis',
+      'Building 7, Sample Business Park',
+      'Demo District',
       'Dubai, UAE',
     ])
     const css = readFileSync(new URL('../invoice/styles.css', import.meta.url), 'utf8')
@@ -194,28 +194,28 @@ describe('Statutory export invoice', () => {
     )
     for (const text of [
       '[ Invoice - AED 12,645.91 ]',
-      'KM-2026-0601',
+      'DEMO-2026-0601',
       '30 Jun 2026',
       '15 Jul 2026',
       statutorySeed.declaration,
       'GSTIN',
-      '09DCNPM8210C1ZL',
+      '27ABCDE1234F1Z5',
       'TAXID (PAN)',
-      'DCNPM8210C',
+      'ABCDE1234F',
       'TRN',
-      '105071208000001',
-      'Meeshu Fintech-FZCO',
+      '999999999999999',
+      'Example Systems FZCO',
       'SAC Code',
       '998314',
       '1 month',
       'Subtotal excl. IGST',
       'IGST 0%',
       exchangeNote(statutorySeed),
-      'KESHAV MISHRA',
-      '50100327628130',
-      'HDFC Bank, Ghaziabad Vasundhara',
-      'HDFC0000563',
-      'HDFCINBBXXX',
+      'ASTER DEMO LABS',
+      '0000000000000000',
+      'Example Bank, Sample Branch',
+      'TEST0000000',
+      'TESTINBBXXX',
     ])
       expect(html).toContain(text)
     expect(html.indexOf(statutorySeed.declaration!)).toBeLessThan(html.indexOf('[ From ]'))
@@ -227,7 +227,7 @@ describe('Statutory export invoice', () => {
     )
     expect(html).toContain('class="text-frame" aria-hidden="true"')
     expect(html.match(/class="frame-corner /g)).toHaveLength(4)
-    expect(html).toContain('class="invoice-brand">Keshav Mishra')
+    expect(html).toContain('class="invoice-brand">Aster Demo Labs')
     expect(html).toContain('class="totals-divider"')
     expect(html.match(/class="text-divider"/g)).toHaveLength(5)
     expect(html.match(/class="table-divider"/g)).toHaveLength(2)
@@ -292,12 +292,12 @@ describe('Tax identity validation', () => {
   it.each([
     ['from', 'taxId', '09XXXXX1234X1ZX'],
     ['from', 'taxId', ''],
-    ['from', 'taxId', '00DCNPM8210C1ZL'],
-    ['from', 'pan', 'ABCDE1234F'],
+    ['from', 'taxId', '00ABCDE1234F1Z5'],
+    ['from', 'pan', 'ABCDE1234G'],
     ['from', 'pan', 'dcnpm8210c'],
-    ['billTo', 'taxId', 'TRN105071208000001'],
-    ['billTo', 'taxId', '10507120800000'],
-    ['billTo', 'taxId', '1050712080000010'],
+    ['billTo', 'taxId', 'TRN999999999999999'],
+    ['billTo', 'taxId', '99999999999999'],
+    ['billTo', 'taxId', '9999999999999990'],
     ['billTo', 'taxId', ''],
     ['billTo', 'taxIdType', 'unknown'],
     ['billTo', 'taxIdLabel', 7],
@@ -338,7 +338,7 @@ describe('Tax identity validation', () => {
   it('keeps multiline source content and distinct per-party labels', () => {
     const invoice = parseInvoice(JSON.stringify(statutorySeed))
     expect(addressText(invoice.from.address)).toContain(
-      'Sector 3\nVasundhara, Ghaziabad\nU.P.',
+      'Example Avenue\nDemo District, Sample City\nExample State',
     )
     expect(invoice.from.taxIdLabel).toBe('GSTIN')
     expect(invoice.billTo.taxIdLabel).toBe('TRN')

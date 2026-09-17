@@ -106,7 +106,7 @@ export default function Workspace({
           onClick={() => createFrom(initialInvoice)}
         >
           <CopyIcon aria-hidden="true" />
-          Use Meeshu preset
+          Use example preset
         </button>
         <div className="library-heading">
           <DocumentIcon aria-hidden="true" />

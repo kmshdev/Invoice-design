@@ -8,12 +8,11 @@
     "dev": "tsx scripts/invoice-server.ts dev",
     "invoice:db": "tsx scripts/db-local.ts",
     "invoice:migrate": "tsx scripts/db-migrate.ts",
-    "invoice:user": "tsx scripts/invoice-server-user.ts",
     "invoice:start": "tsx scripts/invoice-server.ts start",
     "invoice:browser": "playwright install chromium",
     "invoice:server:test": "vp run invoice:build && INVOICE_PDF_SMOKE=1 vp test run test/invoice-server.test.ts test/invoice-server-pdf.test.ts",
-    "invoice:build": "astro build --root invoice",
-    "invoice:check": "astro check --root invoice && tsc -p invoice/tsconfig.json",
+    "invoice:build": "npm run invoice:pdf:build && astro build",
+    "invoice:check": "astro check && tsc -p invoice/tsconfig.json",
     "build": "npm run invoice:build",
     "lint": "vp lint",
     "fmt": "vp fmt && vp run astro:format",
@@ -28,13 +27,15 @@
     "astro:format": "prettier --config prettier.astro.config.mjs --write \"invoice/**/*.astro\"",
     "astro:format:check": "prettier --config prettier.astro.config.mjs --check \"invoice/**/*.astro\"",
     "start": "tsx scripts/invoice-server.ts start",
-    "invoice:editor:test": "tsx scripts/check-invoice-editor.ts"
+    "invoice:editor:test": "tsx scripts/check-invoice-editor.ts",
+    "invoice:pdf:build": "node invoice/pdf/build.mjs"
   },
   "license": "MPL-2.0",
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/mdx": "^8.0.1",
     "@astrojs/react": "^6.0.5",
+    "@astrojs/vercel": "11.0.10",
     "@stisla/style": "^3.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.5.2",
@@ -51,8 +52,12 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",
+    "@aws-sdk/client-s3": "^3.995.0",
+    "@aws-sdk/s3-request-presigner": "^3.995.0",
+    "@neondatabase/auth": "0.5.0-beta",
     "@oxide/design-system": "6.7.0",
-    "better-auth": "^1.7.4",
+    "@sparticuz/chromium": "143.0.0",
+    "@vercel/functions": "^3.4.0",
     "kugiri": "^0.5.2",
     "pg": "^8.23.0",
     "playwright": "^1.63.0",
@@ -72,18 +77,21 @@
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "24.21.0",
-      "onFail": "download"
+      "version": ">=24.19.0 <25",
+      "onFail": "error"
     },
     "packageManager": {
       "name": "npm",
-      "version": "12.0.2",
-      "onFail": "download"
+      "version": ">=11 <13",
+      "onFail": "error"
     }
   },
   "overrides": {
     "vite": "npm:@voidzero-dev/vite-plus-core@0.3.1",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "@vercel/routing-utils": {
+      "path-to-regexp": "6.3.0"
+    }
   },
   "packageManager": "npm@12.0.2",
   "allowScripts": {
@@ -93,5 +101,8 @@
     "@embedded-postgres/darwin-x64@18.4.0-beta.17": true,
     "@embedded-postgres/linux-x64@18.4.0-beta.17": true,
     "@embedded-postgres/linux-arm64@18.4.0-beta.17": true
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

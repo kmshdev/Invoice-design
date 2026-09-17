@@ -9,6 +9,7 @@ import {
   type Invoice,
 } from '../model'
 import { conflict, HttpError } from './errors'
+import { getPdfStorage, type PdfDisposition, type PdfStorage } from './storage'
 
 export const TEMPLATE_VERSION = 'invoice-v1'
 export type PdfRenderer = (invoice: Invoice) => Promise<Buffer>
@@ -71,6 +72,7 @@ export class InvoiceRepository {
     private readonly database: pg.Pool,
     private readonly renderPdf: PdfRenderer,
     private readonly numberPrefix = 'INV',
+    private readonly archive: PdfStorage = getPdfStorage(),
   ) {
     if (!/^[A-Z0-9]{1,4}$/.test(numberPrefix))
       throw new Error('Invalid invoice number prefix.')
@@ -257,15 +259,19 @@ export class InvoiceRepository {
         !pdf.subarray(0, 5).equals(Buffer.from('%PDF-'))
       )
         throw new Error('PDF renderer produced an invalid or oversized document.')
+      const checksum = createHash('sha256').update(pdf).digest('hex')
+      const key = `invoices/sha256/${checksum}.pdf`
+      await this.archive.put(key, pdf, checksum, `${snapshot.reference}.pdf`)
       const issued = await client.query<InvoiceRow>(
-        `UPDATE invoice_records SET data = $3, revision = revision + 1, status = 'issued', updated_at = clock_timestamp(), issued_at = clock_timestamp(), template_version = $4, pdf = $5, pdf_sha256 = $6, issued_from_revision = $7 WHERE owner_id = $1 AND id = $2 RETURNING ${fields}`,
+        `UPDATE invoice_records SET data = $3, revision = revision + 1, status = 'issued', updated_at = clock_timestamp(), issued_at = clock_timestamp(), template_version = $4, pdf_key = $5, pdf_sha256 = $6, pdf_bytes = $7, issued_from_revision = $8 WHERE owner_id = $1 AND id = $2 RETURNING ${fields}`,
         [
           owner,
           id,
           JSON.stringify(snapshot),
           TEMPLATE_VERSION,
-          pdf,
-          createHash('sha256').update(pdf).digest('hex'),
+          key,
+          checksum,
+          pdf.length,
           revision,
         ],
       )
@@ -282,22 +288,35 @@ export class InvoiceRepository {
       client.release()
     }
   }
-  async pdf(owner: string, id: string) {
+  async pdf(owner: string, id: string, disposition: PdfDisposition = 'attachment') {
     const result = await this.database.query<{
       status: string
-      pdf: Buffer
+      pdf_key: string
       pdf_sha256: string
+      pdf_bytes: number
       reference: string
     }>(
-      `SELECT status, pdf, pdf_sha256, data->>'reference' AS reference FROM invoice_records WHERE owner_id = $1 AND id = $2`,
+      `SELECT status, pdf_key, pdf_sha256, pdf_bytes, data->>'reference' AS reference FROM invoice_records WHERE owner_id = $1 AND id = $2`,
       [owner, id],
     )
     const row = result.rows[0]
     if (!row) throw new HttpError(404, 'Invoice not found.')
     if (row.status !== 'issued')
       throw new HttpError(409, 'Issue this invoice before downloading its archived PDF.')
-    if (createHash('sha256').update(row.pdf).digest('hex') !== row.pdf_sha256)
+    const bytes = await this.archive.get(row.pdf_key)
+    if (
+      bytes.length !== row.pdf_bytes ||
+      createHash('sha256').update(bytes).digest('hex') !== row.pdf_sha256
+    )
       throw new Error('Archived PDF integrity check failed.')
-    return { bytes: row.pdf, checksum: row.pdf_sha256, reference: row.reference }
+    return {
+      bytes,
+      checksum: row.pdf_sha256,
+      reference: row.reference,
+      ...(this.archive.signedDownload &&
+      (disposition === 'attachment' || bytes.length > 4 * 1024 * 1024)
+        ? { downloadUrl: await this.archive.signedDownload(row.pdf_key) }
+        : {}),
+    }
   }
 }

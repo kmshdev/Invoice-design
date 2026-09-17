@@ -1,10 +1,5 @@
 import type EmbeddedPostgres from 'embedded-postgres'
-import {
-  execFile as execFileCallback,
-  execFileSync,
-  spawn,
-  type ChildProcess,
-} from 'node:child_process'
+import { execFile as execFileCallback, spawn, type ChildProcess } from 'node:child_process'
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
@@ -18,11 +13,13 @@ import type { InvoiceRecord } from '../invoice/application/contracts'
 import { createPool } from '../invoice/server/database'
 import { migrate } from '../invoice/server/migrations'
 import { startPostgres } from '../scripts/db-local'
+import { startBackendFixtures } from './helpers/backend-fixtures'
 
 const directory = `.tools/invoice-postgres/pdf-test-${randomUUID()}`
 let postgres: EmbeddedPostgres | undefined
 let database: pg.Pool | undefined
 let server: ChildProcess | undefined
+let backend: Awaited<ReturnType<typeof startBackendFixtures>> | undefined
 let origin: string
 let cookie: string
 const email = `pdf-${randomUUID()}@example.test`
@@ -82,32 +79,13 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
     origin = `http://127.0.0.1:${httpPort}`
     const config = {
       databaseUrl: `postgresql://invoice_local:${dbPassword}@127.0.0.1:${dbPort}/invoice_pdf_test`,
-      authSecret: randomBytes(48).toString('hex'),
+      cookieSecret: randomBytes(48).toString('hex'),
       baseURL: origin,
       production: false,
     }
     database = createPool(config.databaseUrl)
-    await migrate(database, config)
-    const provisioned = execFileSync(
-      process.execPath,
-      ['--import', 'tsx', 'scripts/invoice-server-user.ts'],
-      {
-        encoding: 'utf8',
-        input: password + '\n',
-        env: {
-          ...process.env,
-          NODE_ENV: 'test',
-          DATABASE_URL: config.databaseUrl,
-          AUTH_SECRET: config.authSecret,
-          AUTH_BASE_URL: origin,
-          INVOICE_NUMBER_PREFIX: 'KM',
-          INVOICE_ADMIN_EMAIL: email,
-          INVOICE_ADMIN_NAME: 'PDF test owner',
-        },
-      },
-    )
-    expect(provisioned).toContain('Owner account created')
-    expect(provisioned).not.toContain(password)
+    await migrate(database)
+    backend = await startBackendFixtures(email, password)
     server = spawn(process.execPath, ['dist-invoice/server/entry.mjs'], {
       env: {
         ...process.env,
@@ -115,10 +93,15 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
         HOST: '127.0.0.1',
         PORT: String(httpPort),
         DATABASE_URL: config.databaseUrl,
-        AUTH_SECRET: config.authSecret,
-        AUTH_BASE_URL: origin,
+        NEON_AUTH_COOKIE_SECRET: config.cookieSecret,
+        APP_BASE_URL: origin,
+        NEON_AUTH_BASE_URL: backend.origin + '/auth',
+        AWS_ENDPOINT_URL_S3: backend.origin,
+        AWS_REGION: 'us-east-2',
+        AWS_ACCESS_KEY_ID: 'fixture-access',
+        AWS_SECRET_ACCESS_KEY: 'fixture-secret',
+        INVOICE_PDF_BUCKET: 'invoice-pdfs',
         INVOICE_NUMBER_PREFIX: 'KM',
-        INVOICE_RENDER_ORIGIN: origin,
         INVOICE_RUNTIME_DIR: path.resolve(directory, 'print'),
       },
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -134,8 +117,8 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
       if (server.exitCode !== null)
         throw new Error(`Built invoice server exited: ${output}`)
       try {
-        const response = await fetch(origin + '/api/invoices')
-        if (response.status === 401) {
+        const response = await fetch(origin + '/login')
+        if (response.status === 200) {
           ready = true
           break
         }
@@ -164,6 +147,7 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
         child.kill('SIGTERM')
       })
     }
+    await backend?.close()
     await database?.end()
     if (postgres) await postgres.stop()
     await rm(directory, { recursive: true, force: true })
@@ -179,8 +163,9 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
         HOST: '127.0.0.1',
         PORT: String(missingPort),
         DATABASE_URL: '',
-        AUTH_SECRET: '',
-        AUTH_BASE_URL: '',
+        NEON_AUTH_COOKIE_SECRET: '',
+        NEON_AUTH_BASE_URL: '',
+        APP_BASE_URL: '',
       },
       stdio: 'ignore',
     })
@@ -198,7 +183,7 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
       }
       expect(response?.status).toBe(503)
       expect(await response?.json()).toMatchObject({
-        error: expect.stringContaining('invoice:user'),
+        error: expect.stringContaining('NEON_AUTH_BASE_URL'),
       })
       expect((await fetch(missingOrigin + '/login')).status).toBe(200)
     } finally {
@@ -268,7 +253,14 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
     expect((await fetch(`${origin}/api/invoices/${draft.id}/pdf`)).status).toBe(401)
     const inline = await call(`/api/invoices/${draft.id}/pdf?inline=1`)
     expect(inline.headers.get('content-disposition')).toContain('inline;')
-    expect(inline.headers.get('x-frame-options')).toBe('SAMEORIGIN')
+    const redirect = await fetch(`${origin}/api/invoices/${draft.id}/pdf`, {
+      headers: { cookie },
+      redirect: 'manual',
+    })
+    expect(redirect.status).toBe(303)
+    expect(redirect.headers.get('cache-control')).toBe('private, no-store')
+    expect(redirect.headers.get('location')).toContain('X-Amz-Expires=60')
+    expect(backend?.objects.size).toBe(1)
     expect(
       (await fetch(`${origin}/internal/render/${randomBytes(32).toString('hex')}`)).status,
     ).toBe(404)

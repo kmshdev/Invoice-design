@@ -31,18 +31,18 @@ Rules use actual Berkeley Mono hyphens, #454545 on #161616, with 0.5em tracking 
 | Statutory declaration | 10px | 400, muted, upright |
 | Added exchange-rate explanation | 10px | 400, muted, italic |
 
-For the Meeshu A4 template, the table top is approximately 34.3% down the sheet, the column-header rule 37.9%, and the item-list bottom 57.5%. Reserve a 16em minimum table body so a single item retains the reference's open space; longer content expands naturally. Keep the payment block bottom-aligned rather than removing required banking rows to mimic the shorter example.
+For the example A4 template, the table top is approximately 34.3% down the sheet, the column-header rule 37.9%, and the item-list bottom 57.5%. Reserve a 16em minimum table body so a single item retains the reference's open space; longer content expands naturally. Keep the payment block bottom-aligned rather than removing required banking rows to mimic the shorter example.
 
 Only explanatory exchange text is italicized; core legal, identity and financial data remains upright. Print scales the same role ratios to A4 (base 9.65pt). Keep equal address columns and the reference's generous table/payment spacing. This document is a print-first artifact; these sizes are not the surrounding app's web typography scale.
 
-## Mandatory Meeshu invoice content
+## Public example invoice content
 
-These particulars are supplied for this contract and are not universal legal defaults for other clients. Preserve them through design iterations. This document records user instructions, not independent certification of legal compliance.
+These fictional particulars are safe public demonstration data, not legal defaults or real payment instructions. Preserve their layout and calculation behavior through design iterations.
 
 ### Header
 
 - Title: `[ Invoice - AED 12,645.91 ]`
-- Ref: `KM-2026-0601`
+- Ref: `DEMO-2026-0601`
 - Issued: `30 Jun 2026`
 - Due: `15 Jul 2026`
 
@@ -54,8 +54,8 @@ SUPPLY MEANT FOR EXPORT UNDER BOND OR LETTER OF UNDERTAKING WITHOUT PAYMENT OF I
 
 ### Addresses
 
-- `[ From ]`: Keshav Mishra, House No. 659, Sector 3, Vasundhara, Ghaziabad, Uttar Pradesh, India 201012. GSTIN: 09DCNPM8210C1ZL. Separate TAXID (PAN): DCNPM8210C.
-- `[ Bill to ]`: Meeshu Fintech-FZCO, Building A1, Dubai Digital Park, Dubai Silicon Oasis, Dubai, UAE. TRN: 105071208000001 (15 digits; TRN is the label).
+- `[ From ]`: Aster Demo Labs, 42 Example Avenue, Demo District, Sample City, Example State, India 400001. GSTIN: 27ABCDE1234F1Z5. Separate TAXID (PAN): ABCDE1234F.
+- `[ Bill to ]`: Example Systems FZCO, Building 7, Sample Business Park, Demo District, Dubai, UAE. TRN: 999999999999999 (15 digits; TRN is the label).
 
 ### Line items
 
@@ -78,11 +78,11 @@ Preserve the agreed INR amount as supplied, independently of computed conversion
 
 Bottom left, heading `[ Payment ]`:
 
-- Beneficiary: KESHAV MISHRA
-- Account No: 50100327628130
-- Bank: HDFC Bank, Ghaziabad Vasundhara
-- IFSC: HDFC0000563
-- SWIFT: HDFCINBBXXX
+- Beneficiary: ASTER DEMO LABS
+- Account No: 0000000000000000
+- Bank: Example Bank, Sample Branch
+- IFSC: TEST0000000
+- SWIFT: TESTINBBXXX
 
 ## Acceptance checks
 
@@ -96,11 +96,11 @@ Bottom left, heading `[ Payment ]`:
 
 ## Template and validation contract
 
-Maintain all starting invoice values in `invoice/content/invoice.mdx` YAML frontmatter, compiled by Astro MDX and checked by the TypeScript runtime validator before use. UI labels and geometry belong to presentation; financial, statutory, identity, address, and payment values do not. Browser source editing and imports remain validated, non-executable JSON. Existing drafts must never be silently migrated to a new person's identifiers; the explicit Meeshu template action adds a separate draft.
+Maintain all starting invoice values in `invoice/content/invoice.mdx` YAML frontmatter, compiled by Astro MDX and checked by the TypeScript runtime validator before use. UI labels and geometry belong to presentation; financial, statutory, identity, address, and payment values do not. Browser source editing and imports remain validated, non-executable JSON. Existing drafts must never be silently migrated to a new person's identifiers; the explicit example template action adds a separate draft.
 
 Use independent per-party tax types and labels. The seller GSTIN and separate TAXID (PAN) must both render; the client's UAE identity must render as TRN, never as GSTIN. Typed identifiers receive format validation, with GSTIN/PAN matching when both are supplied, but no unrequested checksum rejection or mutation. Legacy generic VAT and international bank references remain supported. Invalid edits show errors and retain the last valid preview and saved draft.
 
-Use the installed Kugiri line-splitting engine for addresses and descriptions without masks or animation. Re-split after edits, fonts, and width changes; isolate its DOM from React and remove observers on cleanup. Preserve a continuous accessible source and use that source for print rather than frozen screen lines. Keep authored newlines and the existing font metrics, frame, rule inventory, and table geometry. Author both template addresses as three semantic lines in MDX, not arbitrary length-based slices. Sender: `House No. 659, Sector 3` / `Vasundhara, Ghaziabad` / `U.P., India, PIN: 201012` (street, locality/city, state/country/postal code). Retain India for the overseas recipient. Recipient: building/business park / district / city/country; do not invent a UAE postal code. Compact address lines should leave clear central whitespace between the two parties. Align the complete From block to the left content edge and the complete Bill to block to the right content edge, including headings, names, addresses, and tax identifiers; retain the inset from the dashed frame.
+Use the installed Kugiri line-splitting engine for addresses and descriptions without masks or animation. Re-split after edits, fonts, and width changes; isolate its DOM from React and remove observers on cleanup. Preserve a continuous accessible source and use that source for print rather than frozen screen lines. Keep authored newlines and the existing font metrics, frame, rule inventory, and table geometry. Author both template addresses as three semantic lines in MDX, not arbitrary length-based slices. Sender: `42 Example Avenue` / `Demo District, Sample City` / `Example State, India, PIN: 400001` (street, locality/city, state/country/postal code). Retain India for the overseas recipient. Recipient: building/business park / district / city/country; do not invent a UAE postal code. Compact address lines should leave clear central whitespace between the two parties. Align the complete From block to the left content edge and the complete Bill to block to the right content edge, including headings, names, addresses, and tax identifiers; retain the inset from the dashed frame.
 
 Lint actual template prose locally with Vale, including deterministically extracted frontmatter strings; use the existing Prettier formatter for code and MDX. See `invoice/USAGE.md` for reproducible commands and the project-local CLI installation.
 

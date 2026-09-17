@@ -65,22 +65,22 @@ async function main() {
   } finally {
     await client.end()
   }
-  const envFile = 'invoice/.env.local'
+  const envFile = path.join(directory, 'database.env')
   if (!existsSync(envFile)) {
     await writeFile(
       envFile,
-      `DATABASE_URL=postgresql://invoice_local:${settings.password}@127.0.0.1:${settings.port}/invoice_studio\nAUTH_SECRET=${randomBytes(48).toString('hex')}\nAUTH_BASE_URL=http://localhost:4321\nINVOICE_NUMBER_PREFIX=KM\nINVOICE_RENDER_ORIGIN=http://127.0.0.1:4321\n`,
+      `DATABASE_URL=postgresql://invoice_local:${settings.password}@127.0.0.1:${settings.port}/invoice_studio\nDATABASE_URL_UNPOOLED=postgresql://invoice_local:${settings.password}@127.0.0.1:${settings.port}/invoice_studio\n`,
       { flag: 'wx', mode: 0o600 },
     )
     console.log(
-      'Created private invoice/.env.local with random local database/auth secrets. No application user was created.',
+      'Created private .tools/invoice-postgres/database.env. Managed auth and storage settings are configured separately.',
     )
   }
   console.log(
     `Local PostgreSQL is ready on 127.0.0.1:${settings.port}; data is retained in ${directory}.`,
   )
   console.log(
-    'Next: vp run invoice:migrate, then vp run invoice:user. Keep this process running.',
+    'Use the generated database settings for local tests. Keep this process running.',
   )
   let stopping = false
   const stop = async () => {

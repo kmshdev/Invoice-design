@@ -274,17 +274,17 @@ describe('Semantic addresses', () => {
   it('formats authored Indian and UAE lines without inventing a UAE postal code', () => {
     const invoice = example()
     expect(invoice.from.address).toEqual({
-      line1: 'House No. 659, Sector 3',
-      line2: 'Vasundhara, Ghaziabad',
-      region: 'U.P.',
+      line1: '42 Example Avenue',
+      line2: 'Demo District, Sample City',
+      region: 'Example State',
       country: 'India',
-      postalCode: '201012',
+      postalCode: '400001',
     })
     expect(addressText(invoice.from.address)).toBe(
-      'House No. 659, Sector 3\nVasundhara, Ghaziabad\nU.P., India, PIN: 201012',
+      '42 Example Avenue\nDemo District, Sample City\nExample State, India, PIN: 400001',
     )
     expect(addressText(invoice.billTo.address)).toBe(
-      'Building A1, Dubai Digital Park\nDubai Silicon Oasis\nDubai, UAE',
+      'Building 7, Sample Business Park\nDemo District\nDubai, UAE',
     )
     expect(addressText(invoice.billTo.address)).not.toMatch(/postal|PIN|00000/)
   })

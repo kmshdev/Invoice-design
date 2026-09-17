@@ -55,7 +55,17 @@ export function createApi(deps: Dependencies) {
       return json(await deps.invoices().issue(owner, invoiceId(params.id), body.revision))
     }),
     pdf: authenticated(async ({ params, url }, owner) => {
-      const result = await deps.invoices().pdf(owner, invoiceId(params.id))
+      const disposition = url.searchParams.get('inline') === '1' ? 'inline' : 'attachment'
+      const result = await deps.invoices().pdf(owner, invoiceId(params.id), disposition)
+      if (result.downloadUrl)
+        return new Response(null, {
+          status: 303,
+          headers: {
+            Location: result.downloadUrl,
+            'Cache-Control': 'private, no-store',
+            'Referrer-Policy': 'no-referrer',
+          },
+        })
       return new Response(new Uint8Array(result.bytes), {
         headers: {
           'Content-Type': 'application/pdf',

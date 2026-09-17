@@ -51,6 +51,7 @@ coverage/
 Thumbs.db
 
 /dist-invoice
+/invoice/pdf/dist/
 
 # Build outputs left in existing checkouts from before the app migration.
 /dist/

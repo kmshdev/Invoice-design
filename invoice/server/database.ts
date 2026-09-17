@@ -16,6 +16,6 @@ export function createPool(connectionString: string) {
   return database
 }
 export function getPool() {
-  pool ??= createPool(serverConfig().databaseUrl)
+  pool ??= createPool(process.env.DATABASE_URL_UNPOOLED || serverConfig().databaseUrl)
   return pool
 }

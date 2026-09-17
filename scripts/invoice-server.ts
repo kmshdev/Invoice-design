@@ -13,13 +13,7 @@ if (mode === 'start') {
 const child = spawn(
   process.execPath,
   mode === 'dev'
-    ? [
-        'node_modules/astro/bin/astro.mjs',
-        'dev',
-        '--root',
-        'invoice',
-        ...process.argv.slice(3),
-      ]
+    ? ['node_modules/astro/bin/astro.mjs', 'dev', ...process.argv.slice(3)]
     : ['dist-invoice/server/entry.mjs'],
   { stdio: 'inherit', env: { ...process.env, HOST: process.env.HOST ?? '127.0.0.1' } },
 )

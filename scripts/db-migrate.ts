@@ -1,14 +1,16 @@
-import { serverConfig } from '../invoice/server/config'
 import { createPool } from '../invoice/server/database'
 import { migrate } from '../invoice/server/migrations'
 import { loadLocalEnv } from './invoice-server-env'
 
 loadLocalEnv()
-const config = serverConfig()
-const pool = createPool(config.databaseUrl)
+const databaseUrl =
+  process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || process.env.DB_URL
+if (!databaseUrl)
+  throw new Error('Configure DATABASE_URL_UNPOOLED (preferred) or DATABASE_URL.')
+const pool = createPool(databaseUrl)
 try {
-  await migrate(pool, config)
-  console.log('Authentication and invoice migrations are up to date.')
+  await migrate(pool)
+  console.log('Invoice archive migrations are up to date.')
 } catch (error) {
   console.error(
     'Migration failed. No invoice schema changes were committed.',

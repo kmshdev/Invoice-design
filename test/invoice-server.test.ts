@@ -1,6 +1,5 @@
-import { betterAuth } from 'better-auth'
 import type EmbeddedPostgres from 'embedded-postgres'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { rm } from 'node:fs/promises'
 import net from 'node:net'
 import type pg from 'pg'
@@ -8,7 +7,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test'
 
 import type { Invoice } from '../invoice/model'
 import { createApi } from '../invoice/server/api'
-import { authOptions } from '../invoice/server/auth'
 import { CatalogRepository } from '../invoice/server/catalog'
 import {
   invoiceNumberPrefix,
@@ -17,9 +15,9 @@ import {
 } from '../invoice/server/config'
 import { createPool } from '../invoice/server/database'
 import { handleErrors, MAX_JSON_BYTES } from '../invoice/server/http'
-import { migrate } from '../invoice/server/migrations'
-import { consumeRenderJob } from '../invoice/server/pdf'
+import { archiveMigration, legacyMigration, migrate } from '../invoice/server/migrations'
 import { InvoiceRepository } from '../invoice/server/repository'
+import type { PdfStorage } from '../invoice/server/storage'
 import { startPostgres } from '../scripts/db-local'
 
 function sample(): Invoice {
@@ -59,13 +57,25 @@ const directory = `.tools/invoice-postgres/test-${randomUUID()}`
 let postgres: EmbeddedPostgres | undefined
 let pool: pg.Pool
 let config: ServerConfig
-let auth: ReturnType<typeof betterAuth>
 let repository: InvoiceRepository
 let owner: string
 let other: string
-let cookie: string
 let renderCount = 0
-const password = randomBytes(24).toString('base64url')
+const archive = new Map<string, Buffer>()
+const memoryArchive: PdfStorage = {
+  put: async (key, bytes, checksum) => {
+    const existing = archive.get(key)
+    if (existing && !existing.equals(bytes))
+      throw new Error('PDF archive key already contains different bytes.')
+    if (checksum.length !== 64) throw new Error('Invalid checksum.')
+    archive.set(key, Buffer.from(bytes))
+  },
+  get: async (key) => {
+    const value = archive.get(key)
+    if (!value) throw new Error('Archived PDF object is missing.')
+    return Buffer.from(value)
+  },
+}
 
 beforeAll(async () => {
   const port = await unusedPort()
@@ -74,32 +84,15 @@ beforeAll(async () => {
   await postgres.createDatabase('invoice_test')
   config = {
     databaseUrl: `postgresql://invoice_local:${databasePassword}@127.0.0.1:${port}/invoice_test`,
-    authSecret: randomBytes(48).toString('hex'),
+    cookieSecret: randomBytes(48).toString('hex'),
     baseURL: 'http://localhost:4321',
+    authBaseURL: 'http://localhost:4321',
     production: false,
   }
   pool = createPool(config.databaseUrl)
-  await migrate(pool, config)
-  const provision = betterAuth(authOptions(pool, config, true))
-  owner = (
-    await provision.api.signUpEmail({
-      body: { email: 'owner@example.test', name: 'Owner', password },
-    })
-  ).user.id
-  other = (
-    await provision.api.signUpEmail({
-      body: { email: 'other@example.test', name: 'Other', password },
-    })
-  ).user.id
-  auth = betterAuth(authOptions(pool, config))
-  const login = await auth.api.signInEmail({
-    body: { email: 'owner@example.test', password },
-    asResponse: true,
-  })
-  cookie = login.headers
-    .getSetCookie()
-    .map((value) => value.split(';')[0])
-    .join('; ')
+  await migrate(pool)
+  owner = randomUUID()
+  other = randomUUID()
   repository = new InvoiceRepository(
     pool,
     async (invoice) => {
@@ -107,6 +100,7 @@ beforeAll(async () => {
       return Buffer.from(`%PDF-1.7\n${invoice.reference}\n%%EOF`)
     },
     'KM',
+    memoryArchive,
   )
 }, 60000)
 afterAll(async () => {
@@ -115,21 +109,35 @@ afterAll(async () => {
   await rm(directory, { recursive: true, force: true })
 }, 30000)
 
-it('applies auth and invoice migrations repeatedly without replacing data', async () => {
-  await migrate(pool, config)
-  const users = await pool.query('SELECT id FROM "user"')
-  expect(users.rowCount).toBe(2)
+it('applies archive migrations repeatedly without provider tables', async () => {
+  await migrate(pool)
   const rows = await pool.query('SELECT version FROM invoice_schema_migrations')
-  expect(rows.rows).toEqual([{ version: 1 }])
+  expect(rows.rows).toEqual([{ version: 2 }])
 })
 it('refuses unknown active invoice migration versions', async () => {
   await pool.query(
     "INSERT INTO invoice_schema_migrations(version, checksum) VALUES (9999, 'unknown')",
   )
   try {
-    await expect(migrate(pool, config)).rejects.toThrow('Unknown or modified')
+    await expect(migrate(pool)).rejects.toThrow('Unknown or modified')
   } finally {
     await pool.query('DELETE FROM invoice_schema_migrations WHERE version = 9999')
+  }
+})
+it('refuses a legacy migration without rewriting account ownership', async () => {
+  await pool.query('DELETE FROM invoice_schema_migrations WHERE version = 2')
+  await pool.query(
+    'INSERT INTO invoice_schema_migrations(version, checksum) VALUES (1, $1)',
+    [createHash('sha256').update(legacyMigration.sql).digest('hex')],
+  )
+  try {
+    await expect(migrate(pool)).rejects.toThrow('explicit account-ID mapping')
+  } finally {
+    await pool.query('DELETE FROM invoice_schema_migrations WHERE version = 1')
+    await pool.query(
+      'INSERT INTO invoice_schema_migrations(version, checksum) VALUES (2, $1)',
+      [createHash('sha256').update(archiveMigration.sql).digest('hex')],
+    )
   }
 })
 it('persists incomplete drafts but rejects structural corruption with field issues', async () => {
@@ -231,6 +239,7 @@ it('rolls back number allocation and issuance when PDF generation fails', async 
       throw new Error('Renderer unavailable')
     },
     'KM',
+    memoryArchive,
   )
   await expect(failing.issue(owner, draft.id, 1)).rejects.toThrow('Renderer unavailable')
   expect(await repository.get(owner, draft.id)).toMatchObject({
@@ -253,9 +262,92 @@ it('rolls back number allocation and issuance when PDF generation fails', async 
     'KM-2026-0004',
   ])
 })
+it('rolls back issuance when archive upload fails without publishing PDF metadata', async () => {
+  const draft = await repository.create(owner, sample())
+  const unavailable: PdfStorage = {
+    put: async () => {
+      throw new Error('Archive unavailable')
+    },
+    get: (key) => memoryArchive.get(key),
+  }
+  const failing = new InvoiceRepository(
+    pool,
+    async () => Buffer.from('%PDF-1.7\n%%EOF'),
+    'KM',
+    unavailable,
+  )
+  await expect(failing.issue(owner, draft.id, 1)).rejects.toThrow('Archive unavailable')
+  expect(await repository.get(owner, draft.id)).toMatchObject({
+    status: 'draft',
+    revision: 1,
+  })
+  expect(
+    (
+      await pool.query(
+        'SELECT pdf_key, pdf_sha256, pdf_bytes FROM invoice_records WHERE id = $1',
+        [draft.id],
+      )
+    ).rows[0],
+  ).toEqual({ pdf_key: null, pdf_sha256: null, pdf_bytes: null })
+})
+it('rejects missing or corrupt archived PDF objects after ownership lookup', async () => {
+  const draft = await repository.create(owner, sample())
+  await repository.issue(owner, draft.id, 1)
+  const key = (
+    await pool.query<{ pdf_key: string }>(
+      'SELECT pdf_key FROM invoice_records WHERE id = $1',
+      [draft.id],
+    )
+  ).rows[0].pdf_key
+  archive.delete(key)
+  await expect(repository.pdf(owner, draft.id)).rejects.toThrow('missing')
+  archive.set(key, Buffer.from('%PDF-1.7\ncorrupt\n%%EOF'))
+  await expect(repository.pdf(owner, draft.id)).rejects.toThrow('integrity')
+  await expect(repository.pdf(other, draft.id)).rejects.toMatchObject({ status: 404 })
+})
+it('uses signed downloads for attachments and oversized inline PDFs only', async () => {
+  const signedArchive: PdfStorage = {
+    ...memoryArchive,
+    signedDownload: async (key) => `https://storage.example.test/${key}`,
+  }
+  const small = new InvoiceRepository(
+    pool,
+    async () => Buffer.from('%PDF-1.7\nsmall\n%%EOF'),
+    'KM',
+    signedArchive,
+  )
+  const smallDraft = await small.create(owner, sample())
+  await small.issue(owner, smallDraft.id, 1)
+  expect((await small.pdf(owner, smallDraft.id, 'inline')).downloadUrl).toBeUndefined()
+  expect((await small.pdf(owner, smallDraft.id)).downloadUrl).toContain(
+    'storage.example.test',
+  )
+
+  const large = new InvoiceRepository(
+    pool,
+    async () =>
+      Buffer.concat([
+        Buffer.from('%PDF-1.7\n'),
+        Buffer.alloc(4 * 1024 * 1024),
+        Buffer.from('\n%%EOF'),
+      ]),
+    'KM',
+    signedArchive,
+  )
+  const largeDraft = await large.create(owner, sample())
+  await large.issue(owner, largeDraft.id, 1)
+  expect((await large.pdf(owner, largeDraft.id, 'inline')).downloadUrl).toContain(
+    'storage.example.test',
+  )
+})
 it('rejects invalid renderer output and unissued PDF downloads', async () => {
   const draft = await repository.create(owner, sample())
-  const invalid = new InvoiceRepository(pool, async () => Buffer.from('not PDF'), 'KM')
+  const invalid = new InvoiceRepository(
+    pool,
+    async () => Buffer.from('not PDF'),
+    'KM',
+    memoryArchive,
+  )
   await expect(invalid.issue(owner, draft.id, 1)).rejects.toThrow('invalid or oversized')
   await expect(repository.pdf(owner, draft.id)).rejects.toMatchObject({ status: 409 })
   expect((await repository.get(owner, draft.id)).status).toBe('draft')
@@ -307,28 +399,27 @@ it('keeps catalog copies owner-scoped and revision checked', async () => {
   expect(list.businesses[0].party).toEqual(draft.from)
 })
 it('bounds invoice lists and paginates equal timestamps without gaps', async () => {
-  const id = (
-    await pool.query<{ id: string }>('SELECT id FROM "user" WHERE id = $1', [other])
-  ).rows[0].id
-  await Promise.all(Array.from({ length: 105 }, () => repository.create(id, sample())))
-  const first = await repository.list(id)
+  await Promise.all(Array.from({ length: 105 }, () => repository.create(other, sample())))
+  const first = await repository.list(other)
   expect(first.records).toHaveLength(100)
   expect(first.nextCursor).toBeTruthy()
-  const second = await repository.list(id, first.nextCursor)
+  const second = await repository.list(other, first.nextCursor)
   expect(second.records).toHaveLength(6)
   expect(new Set([...first.records, ...second.records].map((row) => row.id)).size).toBe(106)
   expect(second.nextCursor).toBeUndefined()
-  await expect(repository.list(id, 'invalid')).rejects.toMatchObject({ status: 400 })
+  await expect(repository.list(other, 'invalid')).rejects.toMatchObject({ status: 400 })
   const malformedCursor = Buffer.from(
     JSON.stringify({ createdAt: new Date().toISOString(), id: '-'.repeat(36) }),
   ).toString('base64url')
-  await expect(repository.list(id, malformedCursor)).rejects.toMatchObject({ status: 400 })
+  await expect(repository.list(other, malformedCursor)).rejects.toMatchObject({
+    status: 400,
+  })
 })
 
 describe('authenticated routes', () => {
   const endpoint = (path: string, options: RequestInit = {}) => {
     const headers = new Headers({
-      cookie,
+      cookie: 'test-session',
       'Content-Type': 'application/json',
       origin: config.baseURL,
     })
@@ -338,7 +429,8 @@ describe('authenticated routes', () => {
   }
   const routes = () =>
     createApi({
-      session: (headers) => auth.api.getSession({ headers }),
+      session: async (headers) =>
+        headers.get('cookie') === 'test-session' ? { user: { id: owner } } : null,
       origin: () => config.baseURL,
       invoices: () => repository,
       catalog: () => new CatalogRepository(pool),
@@ -399,47 +491,6 @@ describe('authenticated routes', () => {
     expect(response.status).toBe(422)
     expect(await response.json()).toMatchObject({ issues: [{ path: 'paymentTerms' }] })
   })
-  it('persists login rate limits and ignores spoofed forwarding headers', async () => {
-    let response: Response | undefined
-    for (let index = 0; index < 11; index += 1) {
-      response = await auth.handler(
-        new Request(`${config.baseURL}/api/auth/sign-in/email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            origin: config.baseURL,
-            'x-forwarded-for': `192.0.2.${index + 1}`,
-          },
-          body: JSON.stringify({ email: 'nobody@example.test', password }),
-        }),
-      )
-    }
-    expect(response?.status).toBe(429)
-    const limits = await pool.query<{ count: number }>(
-      'SELECT count FROM "rateLimit" WHERE key LIKE $1',
-      ['%/sign-in/email'],
-    )
-    expect(limits.rows).toHaveLength(1)
-    expect(limits.rows[0].count).toBe(10)
-  })
-  it('disables public registration while allowing the provisioned owner to sign in', async () => {
-    const response = await auth.handler(
-      new Request(`${config.baseURL}/api/auth/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', origin: config.baseURL },
-        body: JSON.stringify({ email: 'public@example.test', name: 'Public', password }),
-      }),
-    )
-    expect(response.status).toBe(400)
-    expect(await response.json()).toMatchObject({ code: 'EMAIL_PASSWORD_SIGN_UP_DISABLED' })
-    expect(
-      (await pool.query('SELECT id FROM "user" WHERE email = $1', ['public@example.test']))
-        .rowCount,
-    ).toBe(0)
-    expect((await auth.api.getSession({ headers: new Headers({ cookie }) }))?.user.id).toBe(
-      owner,
-    )
-  })
 })
 it('returns actionable configuration errors without reflecting configured credentials', async () => {
   const privateValue = 'private-configuration-marker'
@@ -457,8 +508,7 @@ it('returns actionable configuration errors without reflecting configured creden
     })
     expect(response.status).toBe(503)
     const text = await response.text()
-    expect(text).toContain('invoice:migrate')
-    expect(text).toContain('invoice:user')
+    expect(text).toContain('Configure DATABASE_URL')
     expect(text).not.toContain(privateValue)
   }
 })
@@ -473,9 +523,9 @@ it('rejects missing or insecure production configuration and inaccessible render
     serverConfig({
       NODE_ENV: 'production',
       DATABASE_URL: config.databaseUrl,
-      AUTH_SECRET: config.authSecret,
-      AUTH_BASE_URL: 'http://localhost:4321',
+      NEON_AUTH_COOKIE_SECRET: config.cookieSecret,
+      APP_BASE_URL: 'http://localhost:4321',
+      NEON_AUTH_BASE_URL: 'http://localhost:4321',
     }),
   ).toThrow('HTTPS')
-  expect(consumeRenderJob(randomBytes(32).toString('hex'))).toBeUndefined()
 })

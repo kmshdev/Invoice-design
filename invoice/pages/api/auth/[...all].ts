@@ -1,17 +1,22 @@
 import type { APIRoute } from 'astro'
 
-import { getAuth } from '../../../server/auth'
+import { proxyAuthRequest, requiresAuthOriginCheck } from '../../../server/auth'
 import { serverConfig } from '../../../server/config'
 import { boundedBody, checkOrigin, handleErrors } from '../../../server/http'
 
-export const ALL: APIRoute = ({ request }) =>
+export const ALL: APIRoute = ({ request, params }) =>
   handleErrors(async () => {
-    if (['GET', 'HEAD'].includes(request.method)) return getAuth().handler(request)
-    checkOrigin(request, serverConfig().baseURL)
-    const body = await boundedBody(request)
+    const config = serverConfig()
+    const path = params.all ?? ''
+    if (requiresAuthOriginCheck(request.method)) checkOrigin(request, config.baseURL)
+    const body = requiresAuthOriginCheck(request.method)
+      ? await boundedBody(request)
+      : undefined
     const headers = new Headers(request.headers)
     headers.delete('content-length')
-    return getAuth().handler(
+    return proxyAuthRequest(
       new Request(request.url, { method: request.method, headers, body }),
+      path,
+      config,
     )
   })
