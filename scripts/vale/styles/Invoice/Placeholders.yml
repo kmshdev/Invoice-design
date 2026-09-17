@@ -1,0 +1,7 @@
+extends: existence
+message: "Replace '%s' with final invoice prose."
+level: error
+ignorecase: false
+tokens:
+  - '\b(?:TODO|FIXME|TBD)\b'
+  - '\bTRN[0-9]{15}\b'

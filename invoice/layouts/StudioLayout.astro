@@ -1,0 +1,25 @@
+---
+import '../styles.css'
+interface Props {
+  title?: string
+}
+const { title = 'Invoice Studio' } = Astro.props
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Create, review, issue, and archive invoices." />
+    <link
+      rel="preload"
+      href="/fonts/berkeley-mono-tx02.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <title>{title}</title>
+  </head>
+  <body><slot /></body>
+</html>

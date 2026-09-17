@@ -1,0 +1,14 @@
+.tools
+.agents
+.github
+.astro
+invoice/.astro
+.vite
+dist-invoice
+invoice/pdf/dist
+test/
+docs/
+INVOICE_DESIGN.md
+invoice/USAGE.md
+invoice/.env*
+.env*

@@ -1,0 +1,91 @@
+/* Document-only type roles; the workbench keeps its own scale and palette. */
+.invoice-sheet {
+  --invoice-font-mono: 'Berkeley Mono', monospace;
+  --invoice-text-body: 12px;
+  --invoice-leading-body: 1.65;
+  --invoice-weight-regular: 400;
+  --invoice-weight-strong: 600;
+}
+.invoice-sheet .invoice-type-accent {
+  color: var(--document-accent);
+  font-weight: var(--invoice-weight-regular);
+}
+.invoice-sheet .invoice-type-muted {
+  color: var(--document-muted);
+}
+.invoice-sheet .invoice-money {
+  font-family: var(--invoice-font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.invoice-sheet .invoice-table {
+  --table-cell-padding-block: 16px;
+  --table-cell-padding-inline: 8px;
+  --table-edge-padding: 0;
+  --table-head-font-size: 1em;
+  --table-head-font-weight: var(--invoice-weight-regular);
+  --table-head-line-height: var(--invoice-leading-body);
+  --table-head-color: var(--document-muted);
+  --table-color: var(--document-fg);
+  width: 100%;
+  table-layout: fixed;
+  font-size: inherit;
+}
+/* Budget the fixed A4 columns in glyphs plus the actual Stisla cell insets. */
+.invoice-sheet .invoice-column-sac {
+  width: calc(9ch + 2 * var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-column-quantity {
+  width: calc(9ch + 2 * var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-column-price {
+  width: calc(14ch + 2 * var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-column-amount {
+  width: calc(15ch + var(--table-cell-padding-inline));
+}
+.invoice-sheet .invoice-table tbody {
+  height: 16em;
+}
+.invoice-sheet .invoice-table th,
+.invoice-sheet .invoice-table td {
+  text-align: right;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.invoice-sheet .invoice-table th {
+  padding-block: 0.333333em;
+}
+.invoice-sheet .table-label {
+  display: block;
+  white-space: nowrap;
+}
+.invoice-sheet .table-sublabel {
+  display: block;
+  color: var(--document-muted);
+}
+.invoice-sheet .invoice-table th:first-child,
+.invoice-sheet .invoice-table td:first-child {
+  text-align: left;
+  padding-right: 12px;
+}
+.invoice-sheet .invoice-table .table-divider td {
+  padding: 0;
+}
+.invoice-sheet .item-detail {
+  display: block;
+  margin-top: 4px;
+}
+.invoice-sheet .invoice-party strong,
+.invoice-sheet .grand-total {
+  font-weight: var(--invoice-weight-strong);
+}
+@media print {
+  .invoice-sheet {
+    --invoice-text-body: 9.65pt;
+  }
+  .invoice-sheet .invoice-table tbody {
+    height: auto;
+  }
+}

@@ -1,119 +1,92 @@
-# @oxide/design-system
+# Invoice Studio
 
-Home to the styles, themes, and base components that are shared across Oxide UI clients.
+An open-beta invoice editor and authenticated backend-for-frontend (BFF), built with
+Astro, React, Neon PostgreSQL, managed Better Auth, and private S3-compatible storage. Draft editing, issuance, recovery, and
+immutable PDF exports live in one application—not a publishable design-system fork.
 
-## Installation
+## Quick start
 
-```
-npm install --save @oxide/design-system
-```
+Use Node 24.19 or newer within Node 24, and npm 11 or 12. Development and CI use
+Node 24.21.0 and npm 12.0.2; Vercel's compatible bundled versions are also supported.
 
-## Publishing
-
-Releases are managed via GitHub Actions workflows triggered from the Actions tab.
-
-- **Full release**: Trigger the "Release" workflow manually with a version number (e.g.,
-  `6.0.3`). This publishes to npm under the `latest` tag, commits the version bump, creates
-  a git tag, and generates a GitHub Release.
-- **Canary release**: Automatically published on every pull request. Each push to a PR
-  publishes a prerelease version (e.g., `6.0.2-canary.a1b2c3d`) to npm under the `canary`
-  tag. Install it with `npm install @oxide/design-system@canary` to test changes before
-  merging.
-
-## Syncing with Figma
-
-The Token Sync Figma plugin reads the CSS files in `styles/` directly and compares them
-against Figma variables. Changes can be applied from the plugin UI.
-
-To regenerate colour palettes, run `npm run color-gen:apply`. This updates the `--color-*`
-variables in `styles/main.css` and writes the accent override files.
-
-## Exporting Icons
-
-Icons are also exported from figma using
-[figma export cli](https://figma-export.marcomontalbano.com/).
-
-Icons are processed and exported as SVGs for direct use in environments where SVGR is
-supported (like our web console). However, for other internal sites such as the marketing
-site, docs site, and the RFD site, we do not use SVGR due to limitations with Remix.
-
-For these cases, we have exported a spritesheet and an icon type file that can be used in an
-icon component as shown below:
-
-```tsx
-import { type Icon as IconType } from '@oxide/design-system/icons'
-// Cannot be imported through '@oxide/design-system'
-import sprite from '../../node_modules/@oxide/design-system/icons/sprite.svg'
-
-type IconProps = IconType & {
-  className?: string
-}
-
-const Icon = ({ name, size, ...props }: IconProps) => {
-  const id = `${name}-${size}`
-
-  return (
-    <svg width={size} height={size} {...props}>
-      <use href={`${sprite}#${id}`} />
-    </svg>
-  )
-}
-
-export default Icon
+```sh
+npm ci
+npm run invoice:browser
+cp invoice/.env.example invoice/.env.local
 ```
 
-Subsequently, you can use it as follows:
+Fill the ignored environment file with your Neon branch's database, managed-auth,
+and private storage settings. Register the app origin in Neon Auth's trusted domains.
+Then run:
 
-```tsx
-<Icon name="access" size={16} />
+```sh
+npm run invoice:migrate
+npm run invoice:pdf:build
+npm run dev
 ```
 
-This is type-checked, and will throw an error if the corresponding icon doesn't exist.
+Open http://localhost:4321 and create an account or sign in. Registration is open;
+every invoice and catalog operation remains scoped to the authenticated account.
+There is no default login. Use a separate Neon branch for development, not production.
 
-## Usage
+See [the runbook](invoice/USAGE.md) for all environment variables, migration safety,
+PDF requirements, Vercel configuration, and development/testing details.
 
-This package provides two main entry points:
+## Architecture
 
-### UI Components (`@oxide/design-system/ui`)
+- `invoice/domain/` and `invoice/model.ts`: invoice validation and calculations.
+- `invoice/application/`: shared contracts, browser API client, and workspace state.
+- `invoice/editor/` and `invoice/components/`: editor and printable document.
+- `invoice/server/`: authentication, persistence, migrations, API handlers, and PDF rendering.
+- `invoice/pages/`: thin Astro route adapters and page entry points.
+- `invoice/pdf/`: self-contained browser renderer reusing the same document and font.
+- `scripts/`: database migrations, local server, and verification commands.
 
-Basic UI components like Badge, Button, Checkbox, Listbox, Spinner, and Tabs. These are
-lightweight components without dependencies on AsciiDoc processing.
+The app consumes the pinned `@oxide/design-system` package through its public
+`icons/react` export. Stisla supplies the existing theme/button/table styles; app-owned
+CSS preserves the invoice's print contract. Do not copy upstream source into this
+repository or add publishing, Figma export, palette-generation, or showcase pipelines.
+BFF modules remain local source modules until a real second consumer needs packaging.
 
-```ts
-import { Button, Badge } from '@oxide/design-system/ui'
+## Verification
+
+```sh
+npm run invoice:vale:install
+npm run check:all
 ```
 
-### AsciiDoc Components (`@oxide/design-system/asciidoc`)
+The acceptance gate runs lint/format/type checks, domain/client/server tests, template
+prose checks, and built-server tests with real PostgreSQL, Chromium PDF rendering,
+and editor browser workflows. Editor tests mock API responses to deterministically
+exercise conflicts and recovery; server/PDF tests exercise the real API, PostgreSQL,
+and Chromium with local auth/S3 protocol fixtures. They need no cloud credentials.
+`npm test` is the faster suite; use `npm run invoice:server:test` for the explicit live
+server/PDF/editor gate. To run editor browser checks against a running local dev server:
 
-[`@oxide/react-asciidoc`](https://github.com/oxidecomputer/react-asciidoc) components for
-rendering AsciiDoc content, reused across docs.oxide.computer, oxide.computer, and
-rfd.shared.oxide.computer. The associated stylesheet `asciidoc.css` is also included.
-
-```ts
-import { AsciiDocBlocks } from '@oxide/design-system/asciidoc'
-
-export const opts: Options = {
-  overrides: {
-    admonition: AsciiDocBlocks.Admonition,
-    table: AsciiDocBlocks.Table,
-    section: AsciiDocBlocks.Section,
-  },
-}
+```sh
+INVOICE_TEST_BASE_URL=http://localhost:4321 npm run invoice:editor:test
 ```
 
-```tsx
-<Asciidoc content={document} options={opts} />
+## Production build
+
+```sh
+npm run build
+npm start
 ```
 
-When using these components, remember to also import their associated stylesheets.
+Configure the environment and apply migrations as described in the runbook first.
+Standalone server output is `dist-invoice/`. On Vercel, `VERCEL=1` selects the Vercel
+adapter and emits `.vercel/output/`, including Chromium and the self-contained renderer.
+PDF downloads redirect to short-lived signed URLs after ownership and integrity checks,
+so large documents do not pass through Vercel's response-size limit.
 
-Be sure to add the components path to the `tailwind.config.js` to ensure the appropriate
-styles are included. For example:
+There is no npm release artifact. `private: true` prevents accidental npm publication;
+it does not restrict beta registration. CI never publishes canaries.
 
-```ts
-content: [
-  './libs/**/*.{ts,tsx,mdx}',
-  './app/**/*.{ts,tsx}',
-  'node_modules/@oxide/design-system/components/**/*.{ts,tsx,jsx,js}',
-],
-```
+Legacy self-hosted-auth databases are not silently migrated: account-ID mapping and
+archive transfer require an explicit migration. Existing data is left untouched.
+
+## License
+
+The repository retains the [Mozilla Public License 2.0](LICENSE) and attribution on
+retained upstream-derived files. The installed design system carries its own notices.

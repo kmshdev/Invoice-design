@@ -1,0 +1,134 @@
+.editor-fieldset,
+.catalog-fields {
+  border: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+.editor-fieldset:disabled input,
+.editor-fieldset:disabled textarea,
+.editor-fieldset:disabled select {
+  opacity: 0.65;
+}
+.workspace-notice,
+.legacy-import,
+.catalog-tools,
+.issue-checklist {
+  margin: 0 0 16px;
+  padding: 12px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.legacy-import summary,
+.catalog-tools summary,
+.issue-checklist summary {
+  cursor: pointer;
+  color: var(--content-raise);
+}
+.issue-checklist ul {
+  padding-left: 24px;
+  color: var(--content-secondary);
+}
+.inline-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.inline-actions > button:not(.button) {
+  padding: 8px;
+  text-decoration: underline;
+}
+.catalog-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 16px;
+}
+.catalog-fields .inline-actions {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.workspace-empty,
+.workspace-state {
+  padding: 48px 24px;
+  min-height: 240px;
+}
+.workspace-empty h2,
+.workspace-state h1,
+.login-form h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  letter-spacing: 0;
+}
+.workspace-empty a,
+.login-form > a {
+  color: var(--app-accent);
+  text-decoration: underline;
+}
+.sidebar .app-brand {
+  font-size: 18px;
+  letter-spacing: 0;
+}
+.sidebar .template-button {
+  white-space: normal;
+  height: auto;
+  min-height: 40px;
+  padding: 8px;
+  margin-bottom: 16px;
+}
+.sidebar .new-invoice {
+  margin-bottom: 16px;
+}
+.warning-banner {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.paper-toggle[hidden] {
+  display: none;
+}
+.workbench.issued-workbench {
+  grid-template-columns: minmax(0, 1fr);
+}
+.archived-pdf {
+  width: 100%;
+  height: 80vh;
+  min-height: 480px;
+  border: 0;
+}
+.login-page {
+  display: grid;
+  min-height: 100dvh;
+  align-items: start;
+  padding: 80px 24px;
+}
+.login-form {
+  width: 100%;
+  max-width: 380px;
+  margin-inline: auto;
+  display: grid;
+  gap: 20px;
+}
+.login-form h2 {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .catalog-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .header-actions {
+    flex-wrap: wrap;
+  }
+}
+@media print {
+  .legacy-import,
+  .catalog-tools,
+  .issue-checklist,
+  .workspace-notice {
+    display: none !important;
+  }
+}

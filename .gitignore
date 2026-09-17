@@ -1,7 +1,27 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# Dependencies and tool caches (including nested apps)
+node_modules/
+.vite/
+.astro/
+coverage/
+.tools/
+*.tsbuildinfo
+.oxlintcache
+
+# Local databases and credentials
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.pem
+*.key
 
 # IDEs and editors
 /.idea
@@ -22,24 +42,22 @@
 
 # misc
 /connect.lock
-/coverage
 *.log
 /typings
-.env
 .eslintcache
 
 # System Files
 .DS_Store
 Thumbs.db
 
-# Ignore temporary script files
-scripts/*.md.mjs
+/dist-invoice
+/invoice/pdf/dist/
 
-components/dist
+# Build outputs left in existing checkouts from before the app migration.
 /dist/
-
+/color-gen/dist/
 /color-gen/color-gen.html
 /color-gen/color-gen.css
-/color-gen/dist
-
-/preview/dist
+/preview/dist/
+.vercel
+.env*

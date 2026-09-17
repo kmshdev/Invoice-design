@@ -1,0 +1,29 @@
+{
+  "reference": "DEMO-2026-0417",
+  "brand": "Example",
+  "issued": "2026-06-12",
+  "paymentTerms": 14,
+  "currency": "EUR",
+  "from": {
+    "name": "Example Studio SAS",
+    "address": "15 Example Street\n75000 Sample City\nFrance",
+    "taxId": "FR00000000000"
+  },
+  "billTo": {
+    "name": "Sample Motors S.p.A.",
+    "address": "4 Demo Road\n41000 Example Town\nItaly",
+    "taxId": "IT00000000000"
+  },
+  "items": [
+    { "id": "platform", "description": "Well Platform - Team", "detail": "112 seats, 1 Jun 2026 to 30 Jun 2026", "quantity": 112, "unitPrice": 21.04, "vat": 20 },
+    { "id": "connector", "description": "Connector sync - metered", "detail": "48,200 records ingested above the plan allowance", "quantity": 48.2, "unitPrice": 3.5, "vat": 20 },
+    { "id": "onboarding", "description": "Onboarding and data migration", "detail": "One-off implementation, delivered 4 Jun 2026", "quantity": 1, "unitPrice": 1450, "vat": 20 }
+  ],
+  "payment": {
+    "beneficiary": "Example Studio SAS",
+    "iban": "DEMO-IBAN-001",
+    "bic": "DEMOBIC",
+    "bank": "Example Bank"
+  },
+  "notes": "Please include the invoice reference with your payment."
+}

@@ -1,0 +1,15 @@
+---
+import App from '../App'
+import { frontmatter } from '../content/invoice.mdx'
+import { parseInvoice } from '../model'
+
+const initialInvoice = parseInvoice(JSON.stringify(frontmatter))
+interface Props {
+  requestedId?: string
+}
+const { requestedId } = Astro.props
+---
+
+<App client:only="react" initialInvoice={initialInvoice} requestedId={requestedId} />
+<noscript>Enable JavaScript to edit invoices. Saved invoices remain on the server.</noscript
+>

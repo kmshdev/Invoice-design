@@ -1,0 +1,79 @@
+---
+import InvoiceDocument from '../components/InvoiceDocument'
+import { frontmatter } from '../content/invoice.mdx'
+import StudioLayout from '../layouts/StudioLayout.astro'
+import { parseInvoice } from '../model'
+
+export const prerender = true
+
+const invoice = parseInvoice(JSON.stringify(frontmatter))
+---
+
+<StudioLayout title="Template preview · Invoice Studio">
+  <header class="template-toolbar">
+    <div>
+      <h1>Template preview</h1>
+      <p>The MDX template, independent of saved invoices and local drafts.</p>
+    </div>
+    <nav aria-label="Template actions">
+      <a class="btn btn--outline" href="/">Open invoice editor</a>
+      <button class="btn btn--primary" type="button" data-print-template
+        >Print template</button
+      >
+    </nav>
+  </header>
+  <main class="template-document" aria-label="MDX template document">
+    <InvoiceDocument invoice={invoice} light={false} client:load />
+  </main>
+</StudioLayout>
+
+<script>
+  document.querySelector('[data-print-template]')?.addEventListener('click', () => {
+    window.print()
+  })
+</script>
+
+<style>
+  .template-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 1000px;
+    margin-inline: auto;
+    padding: 28px 24px;
+  }
+  .template-toolbar h1 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .template-toolbar p {
+    margin: 0;
+    max-width: 50ch;
+    color: var(--content-secondary);
+    line-height: 1.6;
+  }
+  .template-toolbar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .template-toolbar .btn {
+    min-height: 44px;
+  }
+  .template-document {
+    overflow-x: auto;
+    padding: 8px 24px 40px;
+  }
+  @media print {
+    .template-toolbar {
+      display: none;
+    }
+    .template-document {
+      overflow: visible;
+      padding: 0;
+    }
+  }
+</style>

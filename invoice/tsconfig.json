@@ -1,9 +1,10 @@
 {
+  "include": ["./**/*.ts", "./**/*.tsx"],
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": [],
+    "types": ["vite/client"],
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -17,6 +18,5 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "allowImportingTsExtensions": true
-  },
-  "include": ["scripts/**/*.ts", "scripts/**/*.mts", "test/**/*.ts", "vite.config.ts"]
+  }
 }

@@ -1,0 +1,7 @@
+---
+import InvoiceStudio from '../../components/InvoiceStudio.astro'
+import StudioLayout from '../../layouts/StudioLayout.astro'
+const { id } = Astro.params
+---
+
+<StudioLayout><InvoiceStudio requestedId={id} /></StudioLayout>

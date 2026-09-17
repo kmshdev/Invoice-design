@@ -1,0 +1,6 @@
+extends: repetition
+message: "Remove the repeated word '%s'."
+level: warning
+alpha: true
+tokens:
+  - '\b[A-Za-z]{2,}\b'
