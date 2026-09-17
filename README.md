@@ -52,9 +52,11 @@ npm run check:all
 ```
 
 The acceptance gate runs lint/format/type checks, domain/client/server tests, template
-prose checks, and a built-server test with real PostgreSQL and Chromium PDF rendering.
+prose checks, and built-server tests with real PostgreSQL, Chromium PDF rendering,
+and editor browser workflows. Editor tests mock API responses to deterministically
+exercise conflicts and recovery; server/PDF tests exercise the real API and database.
 `npm test` is the faster suite; use `npm run invoice:server:test` for the explicit live
-server/PDF gate. To run editor browser checks against a running local dev server:
+server/PDF/editor gate. To run editor browser checks against a running local dev server:
 
 ```sh
 INVOICE_TEST_BASE_URL=http://localhost:4321 npm run invoice:editor:test

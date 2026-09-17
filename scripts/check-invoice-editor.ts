@@ -15,8 +15,13 @@ const context = await browser.newContext({ viewport: { width: 1500, height: 1100
 const page = await context.newPage()
 const errors: string[] = []
 page.on('pageerror', (error) => errors.push(error.message))
+page.on('console', (message) => {
+  if (message.type() === 'error' && message.text().includes('[astro-island]'))
+    errors.push(message.text())
+})
 page.on('dialog', (dialog) => void dialog.accept())
 const id = '11111111-1111-4111-8111-111111111111'
+const missingId = '22222222-2222-4222-8222-222222222222'
 let record = {
   id,
   revision: 1,
@@ -59,6 +64,8 @@ await context.route('**/api/**', async (route) => {
     return respond(record)
   }
   if (url.pathname === `/api/invoices/${id}`) return respond(record)
+  if (url.pathname === `/api/invoices/${missingId}`)
+    return respond({ error: 'Invoice not found.' }, 404)
   return respond({ error: 'Unexpected test request.' }, 400)
 })
 try {
@@ -69,7 +76,14 @@ try {
     0,
     'Workspace must not auto-select a fixture',
   )
-  await page.goto(new URL(`/invoices/${id}`, base).href)
+  await page.goto(new URL(`/invoices/${missingId}`, base).href)
+  await page.getByText('Invoice not found.', { exact: true }).waitFor()
+  assert.equal(
+    await page.locator('.invoice-sheet').count(),
+    0,
+    'A missing invoice must not select an unrelated draft',
+  )
+  await page.locator(`a[href="/invoices/${id}"]`).click()
   await page.getByRole('heading', { name: 'Invoice editor', exact: true }).waitFor()
   const editor = page.getByRole('region', { name: 'Invoice content editor' })
   await editor
@@ -144,7 +158,7 @@ try {
   await page.screenshot({ path: '.tools/editor-cycle/mobile.png', fullPage: true })
   assert.deepEqual(errors, [])
   console.log(
-    'Editor browser checks passed: explicit selection, save, secondary review, invalid inputs, recovery, conflict, JSON and retry-safe import.',
+    'Editor browser checks passed: explicit selection, missing-invoice recovery, save, secondary review, invalid inputs, recovery, conflict, JSON and retry-safe import.',
   )
 } catch (error) {
   await mkdir('.tools/editor-cycle', { recursive: true })

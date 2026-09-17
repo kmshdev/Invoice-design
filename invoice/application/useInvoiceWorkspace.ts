@@ -42,16 +42,22 @@ export function useInvoiceWorkspace(requestedId?: string) {
           location.assign(`/login?next=${encodeURIComponent(location.pathname)}`)
           return
         }
-        const [list, selected] = await Promise.all([
-          request<InvoiceList>('/api/invoices'),
-          requestedId
-            ? request<InvoiceRecord>(`/api/invoices/${requestedId}`)
-            : Promise.resolve(null),
-        ])
+        const list = await request<InvoiceList>('/api/invoices')
         if (disposed) return
         setOwnerId(session.user.id)
         setRecords(list.records)
         setNextCursor(list.nextCursor)
+        let selected: InvoiceRecord | null = null
+        if (requestedId) {
+          try {
+            selected = await request<InvoiceRecord>(`/api/invoices/${requestedId}`)
+          } catch (cause) {
+            if (!disposed)
+              setError(cause instanceof Error ? cause.message : 'Unable to load invoice.')
+            return
+          }
+        }
+        if (disposed) return
         setRecord(selected)
         setValue(selected?.data ?? null)
         setPreview(selected?.data ?? null)

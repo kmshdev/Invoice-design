@@ -1,10 +1,16 @@
 import type EmbeddedPostgres from 'embedded-postgres'
-import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
+import {
+  execFile as execFileCallback,
+  execFileSync,
+  spawn,
+  type ChildProcess,
+} from 'node:child_process'
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import net from 'node:net'
 import path from 'node:path'
+import { promisify } from 'node:util'
 import type pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test'
 
@@ -22,6 +28,7 @@ let cookie: string
 const email = `pdf-${randomUUID()}@example.test`
 const password = randomBytes(24).toString('base64url')
 let output = ''
+const execFile = promisify(execFileCallback)
 
 async function port() {
   const listener = net.createServer()
@@ -39,6 +46,27 @@ async function call(url: string, method = 'GET', body?: unknown) {
     headers: { cookie, origin, 'Content-Type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   })
+}
+async function runEditorBrowserCheck() {
+  try {
+    await execFile(
+      process.execPath,
+      ['--import', 'tsx', 'scripts/check-invoice-editor.ts'],
+      {
+        encoding: 'utf8',
+        timeout: 60000,
+        env: { ...process.env, INVOICE_TEST_BASE_URL: origin },
+      },
+    )
+  } catch (cause) {
+    const error = cause as Error & { stdout?: string | Buffer; stderr?: string | Buffer }
+    const stdout = error.stdout?.toString() ?? ''
+    const stderr = error.stderr?.toString() ?? ''
+    throw new Error(
+      `Editor browser check failed.\nstdout:\n${stdout}\nstderr:\n${stderr}\nServer output:\n${output}`,
+      { cause },
+    )
+  }
 }
 describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () => {
   beforeAll(async () => {
@@ -262,4 +290,8 @@ describe.runIf(process.env.INVOICE_PDF_SMOKE === '1')('built invoice PDF', () =>
     )
     expect(stored.rows[0].pdf_sha256).toBe(createHash('sha256').update(bytes).digest('hex'))
   }, 60000)
+
+  it('hydrates and exercises the editor against the built server', async () => {
+    await runEditorBrowserCheck()
+  }, 90000)
 })
