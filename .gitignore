@@ -51,5 +51,12 @@ coverage/
 Thumbs.db
 
 /dist-invoice
+
+# Build outputs left in existing checkouts from before the app migration.
+/dist/
+/color-gen/dist/
+/color-gen/color-gen.html
+/color-gen/color-gen.css
+/preview/dist/
 .vercel
 .env*
