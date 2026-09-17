@@ -25,12 +25,14 @@ export default function InvoiceEditor({
   issues,
   disabled,
   onSourceDirty,
+  editableReference = false,
 }: {
   invoice: Invoice
   update: (patch: Partial<Invoice>) => void
   issues: ValidationIssue[]
   disabled: boolean
   onSourceDirty: (dirty: boolean) => void
+  editableReference?: boolean
 }) {
   const [section, setSection] = useState<(typeof sections)[number]>('Details')
   const [sourceMode, setSourceMode] = useState(false)
@@ -148,8 +150,15 @@ export default function InvoiceEditor({
                       <Field label="Invoice number">
                         <input
                           value={invoice.reference}
-                          placeholder="Assigned when issued"
-                          readOnly
+                          placeholder={
+                            editableReference ? 'INV-001' : 'Assigned when issued'
+                          }
+                          readOnly={!editableReference}
+                          onChange={
+                            editableReference
+                              ? (event) => update({ reference: event.target.value })
+                              : undefined
+                          }
                         />
                       </Field>
                       <div className="field-grid">

@@ -1,6 +1,14 @@
-# Using Invoice Studio
+# Using Shardlane
 
-Invoice Studio is an Astro application with a React editor, PostgreSQL invoice records, and authenticated workspaces. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components. It consumes the public `@oxide/design-system/icons/react` icon barrel rather than repository implementation files.
+Shardlane has a public homepage at `/`, an account-optional browser creator at `/create`, and the authenticated workspace at `/workspace`. Start the homepage and browser creator with `npm ci` then `npm run dev`; they do not require managed-service credentials. See [`../docs/PLATFORM_DESIGN.md`](../docs/PLATFORM_DESIGN.md) for the platform structure and design decisions.
+
+Run `npm run platform:visual:test` for the screenshot-led dark design checks when `docs/design-spec/target/` is available locally. It exercises navigation and FAQs, captures six viewport sizes, checks the reference geometry/palette, and prints the evidence directory. Public and workspace UI reuse Stisla semantic tokens from `theme.css`; the print invoice retains independent typography and colors.
+
+Run `npm run platform:test` against the local preview (default `http://localhost:4387`, override with `INVOICE_TEST_BASE_URL`) for guest workflow, responsive, print/PDF, and axe-core checks. Decorative invoice frame glyphs are excluded from text-contrast checks; all actual invoice text and controls remain in scope.
+
+In `/create`, valid edits save automatically to this browser. The **Invoices** navigation opens a searchable draft table. **Export JSON** backs up the selected invoice; **Import JSON** adds a separate copy. **Export PDF** opens the browser print dialog after validating the invoice; choose Save as PDF. It does not issue or archive an immutable server invoice. **Use example** is explicit and does not overwrite a draft. Clearing site data removes local drafts, so export them first. Guest drafts are not uploaded automatically on sign-in; import their JSON into the cloud workspace when needed.
+
+The authenticated workspace remains an Astro application with a React editor, PostgreSQL invoice records, and authenticated workspaces. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components. It consumes the public `@oxide/design-system/icons/react` icon barrel rather than repository implementation files.
 
 ## Architecture boundaries
 
@@ -48,7 +56,7 @@ For a standalone build, run `npm run build` (or `npm run invoice:build`) and dep
 4. **Print draft** opens the browser's print dialog for working copies. **Issue invoice** assigns its final number and locks the data and original PDF. It requires a saved draft that passes issuance checks.
 5. **Original PDF** downloads the archived document. **Export JSON** provides portable data. **Import invoice JSON** creates a separate draft; it never modifies an existing issued invoice.
 
-Browser storage is recovery assistance, not the invoice database. Recoverable unsaved edits are scoped to the signed-in account, invoice ID and saved revision. Restoration is explicit. Old browser-only invoices can be backed up and copied through **Import previous browser invoices**; invalid records are reported individually, retries are idempotent, and the original browser data is never deleted automatically. Browser storage remains origin-specific, so import separately from any old port/origin where records were created.
+In the authenticated workspace, browser storage is recovery assistance, not the invoice database. Recoverable unsaved edits are scoped to the signed-in account, invoice ID and saved revision. Restoration is explicit. Old browser-only invoices can be backed up and copied through **Import previous browser invoices**; invalid records are reported individually, retries are idempotent, and the original browser data is never deleted automatically. Browser storage remains origin-specific, so import separately from any old port/origin where records were created.
 
 No email delivery, recurring billing, or payment processing is performed.
 

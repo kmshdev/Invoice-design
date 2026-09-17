@@ -8,6 +8,9 @@
 import { defineConfig } from 'vite-plus'
 
 export default defineConfig({
+  staged: {
+    '*': 'vp check --fix',
+  },
   resolve: { tsconfigPaths: true },
   test: {
     include: ['test/**/*.test.{ts,tsx}'],

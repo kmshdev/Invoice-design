@@ -1,0 +1,31 @@
+---
+import InvoiceFlow from '../invoice-flow'
+import { frontmatter } from '../../content/invoice.mdx'
+import { parseInvoice } from '../../model'
+import '../invoice-flow.css'
+const example = parseInvoice(JSON.stringify(frontmatter))
+---
+
+<section
+  class="content-section ownership site-frame"
+  id="open-source"
+  aria-labelledby="ownership-title"
+>
+  <div class="section-inner ownership-heading">
+    <h2 id="ownership-title"><span>Your work.</span> Your invoice. Your files.</h2>
+    <p class="section-description">
+      From the first line item to the final document.<br />Keep the source, the PDF, and the
+      next draft.
+    </p>
+  </div>
+  <InvoiceFlow client:visible invoice={example} />
+  <div class="section-inner ownership-bottom">
+    <p>
+      <strong>Open source. Yours to run.</strong> Inspect, adapt, and self-host under MPL-2.0.
+      Browser drafts stay on your device; cloud import is always your choice.
+    </p>
+    <a class="button secondary" href="https://github.com/kmshdev/Invoice-design"
+      >Explore the source <span aria-hidden="true">↗</span></a
+    >
+  </div>
+</section>

@@ -87,7 +87,10 @@ export default function Workspace({
         aria-label="Invoice library"
       >
         <a className="app-brand" href="/">
-          Invoice Studio
+          <span className="brand-symbol" aria-hidden="true">
+            [s]
+          </span>{' '}
+          Shardlane
         </a>
         <button
           className="new-invoice"

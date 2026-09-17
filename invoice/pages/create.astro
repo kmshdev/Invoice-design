@@ -1,0 +1,14 @@
+---
+import GuestWorkspace from '../editor/GuestWorkspace'
+import { frontmatter } from '../content/invoice.mdx'
+import StudioLayout from '../layouts/StudioLayout.astro'
+import { parseInvoice } from '../model'
+const initialInvoice = parseInvoice(JSON.stringify(frontmatter))
+---
+
+<StudioLayout title="Create an invoice · Shardlane">
+  <GuestWorkspace client:only="react" initialInvoice={initialInvoice} />
+  <noscript
+    >JavaScript is required to edit invoices. Your browser drafts stay on this device.</noscript
+  >
+</StudioLayout>

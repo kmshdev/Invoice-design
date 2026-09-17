@@ -1,0 +1,92 @@
+---
+import {
+  Document16Icon,
+  Terminal16Icon,
+  Checkmark12Icon,
+  NextArrow12Icon,
+  MenuOpen12Icon,
+  MenuClose12Icon,
+} from '@oxide/design-system/icons/react'
+import '../header-icons.css'
+
+const links = [
+  { href: '#product', label: 'Product', icon: Document16Icon, morphIcon: 'file-text' },
+  { href: '#features', label: 'Features', icon: Checkmark12Icon, morphIcon: 'grid-2x2' },
+  { href: '#open-source', label: 'Source', icon: Terminal16Icon, morphIcon: 'code-2' },
+  { href: '/login', label: 'Sign in', icon: NextArrow12Icon, morphIcon: 'log-in' },
+]
+---
+
+<header class="site-header">
+  <nav class="site-nav" aria-label="Main navigation">
+    <a class="wordmark" href="/" aria-label="Shardlane home"
+      ><span aria-hidden="true">[s]</span> Shardlane</a
+    >
+    <div class="nav-links">
+      {
+        links.map(({ href, label, icon: Icon, morphIcon }) => (
+          <a class="nav-tab" href={href} data-morph-link>
+            <span class="nav-mark" aria-hidden="true" data-dither>
+              <span class="morph-icon" data-morph-icon={morphIcon}>
+                <Icon className="nav-glyph" />
+              </span>
+            </span>
+            <span>{label}</span>
+          </a>
+        ))
+      }
+    </div>
+    <div class="nav-actions">
+      <a
+        class="button primary nav-dashboard"
+        href="/create"
+        aria-label="Dashboard"
+        title="Dashboard"
+        data-morph-link
+        ><span class="nav-dashboard-mark" aria-hidden="true" data-dither
+          ><span class="morph-icon" data-morph-icon="arrow-right"><NextArrow12Icon /></span
+          ></span
+        ><span class="dashboard-label">Dashboard</span></a
+      >
+      <details class="nav-menu">
+        <summary aria-label="Navigation menu" title="Navigation menu">
+          <span class="nav-menu-morph" aria-hidden="true" data-dither>
+            <span class="morph-icon" data-morph-icon="menu">
+              <MenuOpen12Icon className="menu-open-icon" />
+              <MenuClose12Icon className="menu-close-icon" />
+            </span>
+          </span>
+        </summary>
+        <div class="nav-menu-links">
+          {
+            links.map(({ href, label, icon: Icon, morphIcon }) => (
+              <a href={href} data-morph-link>
+                <span class="mobile-nav-mark" aria-hidden="true" data-dither>
+                  <span class="morph-icon" data-morph-icon={morphIcon}>
+                    <Icon />
+                  </span>
+                </span>
+                {label}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+    </div>
+  </nav>
+</header>
+
+<script>
+  import { initializeHeaderIcons } from '../header-icons'
+
+  let disposeHeader = () => {}
+
+  const mountHeader = () => {
+    disposeHeader()
+    disposeHeader = initializeHeaderIcons(document)
+  }
+
+  mountHeader()
+  document.addEventListener('astro:before-swap', () => disposeHeader())
+  document.addEventListener('astro:page-load', mountHeader)
+</script>

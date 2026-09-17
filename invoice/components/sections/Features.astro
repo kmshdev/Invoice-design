@@ -1,0 +1,139 @@
+---
+import { Document16Icon } from '@oxide/design-system/icons/react'
+import '../feature-grid.css'
+import '../dither-feedback.css'
+
+const features = [
+  {
+    artwork: 'live-invoice-preview',
+    tone: 'blue',
+    title: 'Live invoice preview',
+    description:
+      'Your document updates alongside your details. Review the same A4 layout you export.',
+    href: '/template-preview',
+    action: 'Preview invoice',
+  },
+  {
+    artwork: 'precise-calculations',
+    tone: 'green',
+    title: 'Precise calculations',
+    description:
+      'Quantities, rates, and tax stay in sync. Currency-aware rounding keeps totals consistent.',
+    href: '/create',
+    action: 'Create invoice',
+  },
+  {
+    artwork: 'international-details',
+    tone: 'amber',
+    title: 'International details',
+    description:
+      'Eight currencies, editable tax identifiers, payment terms, and bank details.',
+    href: '/create',
+    action: 'Create invoice',
+  },
+  {
+    artwork: 'reusable-drafts',
+    tone: 'blue',
+    title: 'Reusable drafts',
+    description:
+      'Duplicate an invoice instead of starting over. Find your work by client or invoice number.',
+    href: '/workspace',
+    action: 'Open workspace',
+  },
+  {
+    artwork: 'pdf-json-exports',
+    tone: 'green',
+    title: 'PDF and JSON exports',
+    description:
+      'Print an A4 document or save portable source data. Import JSON as a separate draft.',
+    href: '/create',
+    action: 'Create invoice',
+  },
+  {
+    artwork: 'light-dark-paper',
+    tone: 'amber',
+    title: 'Light and dark paper',
+    description:
+      'Choose the appearance that fits your document. The content and calculations stay the same.',
+    href: '/create',
+    action: 'Create invoice',
+  },
+  {
+    artwork: 'no-account-creation',
+    tone: 'blue',
+    title: 'No-account creation',
+    description:
+      'Start directly in your browser. Drafts stay on this device until you choose to export them.',
+    href: '/create',
+    action: 'Create invoice',
+  },
+  {
+    artwork: 'account-backed-records',
+    tone: 'green',
+    title: 'Account-backed records',
+    description:
+      'Save revisions in the cloud workspace. Issue invoices with a locked number and original PDF.',
+    href: '/workspace',
+    action: 'Open workspace',
+  },
+  {
+    artwork: 'open-source-foundation',
+    tone: 'amber',
+    title: 'Open-source foundation',
+    description:
+      'Inspect the code, adapt the workflow, and self-host. No proprietary document format.',
+    href: 'https://github.com/kmshdev/Invoice-design',
+    action: 'View source',
+  },
+]
+---
+
+<section
+  class="content-section features site-frame"
+  id="features"
+  aria-labelledby="features-title"
+>
+  <div class="section-rail"><p class="eyebrow section-inner">// FEATURES</p></div>
+  <div class="section-inner section-content">
+    <h2 id="features-title">Everything you need<br />for a well-made invoice.</h2>
+    <p class="section-description">
+      The details, the calculations, and the document. All together.
+    </p>
+    <div class="feature-grid">
+      {
+        features.map(({ artwork, tone, title, description, href, action }) => (
+          <article class="feature-cell">
+            <a class:list={['feature-link', `feature-link--${tone}`]} href={href}>
+              <div class="feature-artwork" aria-hidden="true">
+                <div class="feature-icon">
+                  <img
+                    src={`/images/features/${artwork}.webp`}
+                    width="320"
+                    height="320"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+              <div class="feature-copy">
+                <p class="feature-action">
+                  <span class="feature-action-icon" data-dither aria-hidden="true">
+                    <Document16Icon />
+                  </span>
+                  {action} <span aria-hidden="true">↗</span>
+                </p>
+                <h3>{title}</h3>
+                <p>{description}</p>
+              </div>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import '../dither-feedback'
+</script>
