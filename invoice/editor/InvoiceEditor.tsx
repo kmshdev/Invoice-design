@@ -1,8 +1,10 @@
+import {
+  Checkmark12Icon as CheckIcon,
+  Document16Icon as DocumentIcon,
+  Terminal16Icon as CodeIcon,
+} from '@oxide/design-system/icons/react'
 import { useEffect, useState } from 'react'
 
-import CheckIcon from '../../icons/react/Checkmark12Icon'
-import DocumentIcon from '../../icons/react/Document16Icon'
-import CodeIcon from '../../icons/react/Terminal16Icon'
 import { shouldWarnBeforeUnload } from '../application/unloadWarning'
 import {
   currencies,

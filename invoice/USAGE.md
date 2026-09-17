@@ -1,6 +1,6 @@
 # Using Invoice Studio
 
-Invoice Studio is an Astro application with a React editor, PostgreSQL invoice records, and authenticated workspaces. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components, retaining the repository's Oxide icons. It is separate from the design-system showcase, which remains available with `vp run preview:dev`.
+Invoice Studio is an Astro application with a React editor, PostgreSQL invoice records, and authenticated workspaces. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components. It consumes the public `@oxide/design-system/icons/react` icon barrel rather than repository implementation files.
 
 ## Architecture boundaries
 
@@ -9,6 +9,7 @@ Invoice Studio is an Astro application with a React editor, PostgreSQL invoice r
 - `server/` owns authentication, owner-scoped persistence, transactional revisions/numbering, and immutable issued PDFs.
 - `editor/` owns forms, profile/preset controls, and workspace views. Save and Issue are distinct actions.
 - `components/InvoiceDocument.tsx` and document CSS render validated invoice values; they do not save records. `/template-preview` reads the MDX fixture directly, without accessing saved invoices.
+- The application consumes published dependencies only. It does not depend on copied design-system components, styles, icons, generators, previews, or token tooling.
 
 Business/client profiles and contract presets are reusable defaults. Applying them copies data into a draft; changing a profile or template never rewrites existing invoices. Issued invoices retain their original PDF, not a re-render using current source code.
 
@@ -16,19 +17,17 @@ Business/client profiles and contract presets are reusable defaults. Applying th
 
 From the repository root:
 
-Install [Vite+](https://viteplus.dev/guide/) once, open a fresh shell, and run `vp help`. This project pins Vite+ 0.3.1, Node 24.21.0, and npm 12.0.2 in `package.json`; the npm lockfile remains authoritative. Runtime selection is project-local, not a change to your global Node default.
+Install the locked dependencies:
 
 ```sh
-vp install --frozen-lockfile
-vp run invoice:browser
-vp run dev
+npm ci
+npm run invoice:browser
+npm run dev
 ```
 
-Open the URL printed by Astro (normally `http://localhost:4321`). For a production build, run `vp run invoice:build`; the static site is written to `dist-invoice/`.
+Open the URL printed by Astro (normally `http://localhost:4321`). For a production build, run `npm run build` (or `npm run invoice:build`); the static site is written to `dist-invoice/`.
 
-`vp run invoice:browser` installs the pinned Chromium binary used to generate immutable issued-invoice PDFs. Run it during both development and production provisioning, before starting the invoice server; package installation alone does not download the browser.
-
-`vp dev` and `vp build` are immutable Vite built-ins, **not** aliases for Astro or package scripts. Use `vp run dev` for Astro and `vp pack` (or `vp run build`) for this repository's design-system library. Existing npm script entry points still work. `vp run preview:dev` starts the design-system showcase; `vp run color-gen:dev` starts the color tool. Their builds use Vite 8 and native TypeScript path-alias resolution.
+`npm run invoice:browser` installs the pinned Chromium binary used to generate immutable issued-invoice PDFs. Run it during both development and production provisioning, before starting the invoice server; package installation alone does not download the browser.
 
 ## Create and export an invoice
 
@@ -82,28 +81,22 @@ The purchased Berkeley Mono TX-02 variable WOFF2 is self-hosted at `public/fonts
 ## Validate changes
 
 ```sh
-vp check                          # Oxfmt + Oxlint + type-aware TypeScript checks
-vp test run                       # all library and invoice tests (Vitest 4)
-vp run invoice:check              # Astro diagnostics + invoice tsc
-vp run invoice:format:check        # native Oxfmt plus Astro-only fallback
-vp run invoice:prose
-vp run check-all                  # strict complete gate used by CI
+npm test                           # invoice tests (Vitest 4)
+npm run invoice:check              # Astro diagnostics + invoice tsc
+npm run invoice:format:check       # native Oxfmt plus Astro-only fallback
+npm run invoice:prose
 ```
-
-`vite.config.ts` owns formatting, linting, test discovery, library packaging, and the Vite Task dependency graph. `check-all` runs those checks plus the invoice, showcase, and color-tool builds. Its package check depends on `build`, verifies all five public imports and declarations, copied CSS, source maps, and `npm pack --dry-run` contents; it does not publish. Validation caching is disabled so a previous success cannot hide a failing check or missing build output. Use `vp run --last-details` to inspect task results.
-
-This root package is not an invented monorepo. The independent `token-sync/` Figma project retains its own installation and configuration and is outside this gate. When real npm workspaces are introduced, the task graph can use `package#task` dependencies and `vp run -r` or `--filter`; no empty workspace packages are required. Generated icons/assets are excluded from reformatting. Existing React-Compiler-only lint constraints and two legacy showcase/color-tool rules are explicitly scoped in the config; no invoice behavior was rewritten to satisfy newly introduced rules.
 
 ### Prose linting and formatting
 
 [Vale](https://github.com/vale-cli/vale) is a prose linter, not a formatter. Install the pinned CLI locally when it is missing:
 
 ```sh
-vp run invoice:vale:install
+npm run invoice:vale:install
 ```
 
 This downloads the official Vale 3.21.0 release for macOS/Linux x64/arm64, checks its pinned SHA-256 digest, and places only the binary in ignored `.tools/vale/`. It does not modify global tools. On other platforms, install Vale 3.21.0 from the official release on PATH. `invoice:prose` prefers the local binary and verifies the version.
 
 `.vale.ini` and `scripts/vale/styles/Invoice/` define project rules for repeated words, unresolved placeholders, and a TRN prefix accidentally embedded in an identifier. Because markup linters can skip frontmatter, the script deterministically extracts **all string values** from the validated MDX template into a local plain-text file, lints it alongside MDX and these two documents, then removes the extraction. No private invoice content goes to an external service. The CLI download is the only network step.
 
-Use `vp run invoice:format` to apply Oxfmt to invoice code, CSS, MDX, tests, and lint tooling. Oxfmt 0.66 supports MDX but not Astro: only `invoice/**/*.astro` is formatted by Prettier with `prettier-plugin-astro` and the explicit `prettier.astro.config.mjs`. `invoice:format:check` checks the same scope without writing. There is no ESLint or general-purpose Prettier pass, and no duplicate formatter for Oxfmt-supported files. Repository policy excludes Markdown and JSON from formatting; Vale checks the prose. No formatter rewrites live draft JSON or supplied tax identifiers.
+Use `npm run invoice:format` to apply Oxfmt to invoice code, CSS, MDX, tests, and lint tooling. Oxfmt 0.66 supports MDX but not Astro: only `invoice/**/*.astro` is formatted by Prettier with `prettier-plugin-astro` and the explicit `prettier.astro.config.mjs`. `invoice:format:check` checks the same scope without writing. There is no ESLint or general-purpose Prettier pass, and no duplicate formatter for Oxfmt-supported files. Repository policy excludes Markdown and JSON from formatting; Vale checks the prose. No formatter rewrites live draft JSON or supplied tax identifiers.

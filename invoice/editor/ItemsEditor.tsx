@@ -1,8 +1,10 @@
+import {
+  Add12Icon as AddIcon,
+  Checkmark12Icon as CheckIcon,
+  Delete16Icon as DeleteIcon,
+} from '@oxide/design-system/icons/react'
 import { useState } from 'react'
 
-import AddIcon from '../../icons/react/Add12Icon'
-import CheckIcon from '../../icons/react/Checkmark12Icon'
-import DeleteIcon from '../../icons/react/Delete16Icon'
 import {
   confirmSecondaryAmount,
   currencies,

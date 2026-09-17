@@ -50,15 +50,6 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Ignore temporary script files
-scripts/*.md.mjs
-
-components/dist
-/dist/
-
-/color-gen/color-gen.html
-/color-gen/color-gen.css
-/color-gen/dist
-
-/preview/dist
 /dist-invoice
+.vercel
+.env*

@@ -29,21 +29,13 @@ export default defineConfig({
     },
     sortPackageJson: false,
     sortTailwindcss: {},
-    // Preserve generated design assets and the independently installed Figma plugin.
-    ignorePatterns: [
-      '**/*.json',
-      '**/*.md',
-      'icons/**',
-      'components/src/assets/**',
-      'token-sync/**',
-      '**/*.astro',
-    ],
+    ignorePatterns: ['**/*.json', '**/*.md', '**/*.astro'],
   },
   lint: {
     plugins: ['typescript', 'react', 'unicorn', 'oxc'],
     categories: { correctness: 'error' },
     env: { node: true, browser: true },
-    ignorePatterns: ['icons/**', 'token-sync/**', '**/*.astro', '**/*.js'],
+    ignorePatterns: ['**/*.astro', '**/*.js'],
     options: { typeAware: true, typeCheck: true },
     rules: {
       // React Compiler is not enabled; preserve the current effect-based components.
@@ -84,8 +76,6 @@ export default defineConfig({
       'typescript/triple-slash-reference': 'error',
     },
     overrides: [
-      { files: ['color-gen/**'], rules: { 'react/immutability': 'off' } },
-      { files: ['preview/**'], rules: { 'typescript/no-floating-promises': 'off' } },
       {
         files: ['**/*.{ts,tsx,mts,cts}'],
         rules: {
@@ -114,30 +104,10 @@ export default defineConfig({
       },
     ],
   },
-  pack: {
-    entry: {
-      'components/src/asciidoc/index': 'components/src/asciidoc/index.tsx',
-      'components/src/syntax/index': 'components/src/syntax/index.ts',
-      'components/src/ui/index': 'components/src/ui/index.ts',
-      'icons/index': 'icons/index.ts',
-      'icons/react/index': 'icons/react/index.ts',
-    },
-    copy: [{ from: 'components/src/assets/*', to: 'dist' }],
-    format: ['esm'],
-    outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-    dts: true,
-    sourcemap: true,
-    clean: true,
-    target: false,
-  },
   run: {
     // Validation must execute, not replay a prior success or omit deleted build outputs.
     cache: false,
     tasks: {
-      'package:check': {
-        command: 'node scripts/check-package.mjs',
-        dependsOn: ['build'],
-      },
       'invoice:server:check': {
         command: 'vp run invoice:browser && vp run invoice:server:test',
       },
@@ -149,11 +119,7 @@ export default defineConfig({
           'invoice:check',
           'invoice:server:check',
           'invoice:prose',
-          'design-md:check',
           'astro:format:check',
-          'package:check',
-          'preview:build',
-          'color-gen:build',
         ],
       },
     },

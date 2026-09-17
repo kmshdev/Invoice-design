@@ -1,12 +1,14 @@
+import {
+  Add12Icon as AddIcon,
+  Checkmark12Icon as CheckIcon,
+  Copy12Icon as CopyIcon,
+  Document16Icon as DocumentIcon,
+  DownloadOutline12Icon as DownloadIcon,
+  Moon12Icon as MoonIcon,
+  Sun12Icon as SunIcon,
+} from '@oxide/design-system/icons/react'
 import { useRef, useState } from 'react'
 
-import AddIcon from '../../icons/react/Add12Icon'
-import CheckIcon from '../../icons/react/Checkmark12Icon'
-import CopyIcon from '../../icons/react/Copy12Icon'
-import DocumentIcon from '../../icons/react/Document16Icon'
-import DownloadIcon from '../../icons/react/DownloadOutline12Icon'
-import MoonIcon from '../../icons/react/Moon12Icon'
-import SunIcon from '../../icons/react/Sun12Icon'
 import { downloadFile, request } from '../application/client'
 import { suppressUnloadWarning } from '../application/unloadWarning'
 import { useInvoiceWorkspace } from '../application/useInvoiceWorkspace'

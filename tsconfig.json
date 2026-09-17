@@ -16,11 +16,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "paths": {
-      "~/*": ["./components/*"],
-      "@/*": ["./*"]
-    },
     "allowImportingTsExtensions": true
   },
-  "include": ["components/**/*.ts", "components/**/*.tsx", "scripts/**/*.ts", "scripts/**/*.mts", "vite.config.ts"]
+  "include": ["scripts/**/*.ts", "scripts/**/*.mts", "test/**/*.ts", "vite.config.ts"]
 }

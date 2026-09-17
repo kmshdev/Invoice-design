@@ -1,6 +1,6 @@
+import { Checkmark12Icon as CheckIcon } from '@oxide/design-system/icons/react'
 import { useEffect, useState } from 'react'
 
-import CheckIcon from '../../icons/react/Checkmark12Icon'
 import { request } from '../application/client'
 import type { CatalogEntry } from '../application/contracts'
 import type { Invoice } from '../model'

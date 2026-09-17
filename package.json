@@ -1,18 +1,9 @@
 {
-  "name": "@oxide/design-system",
-  "version": "6.7.0",
-  "description": "Home of reusable design assets and token for oxide internal sites",
+  "name": "invoice-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Invoice editor and authenticated invoice lifecycle BFF",
   "type": "module",
-  "sideEffects": false,
-  "exports": {
-    "./styles/*": "./styles/*",
-    "./components/*.css": "./dist/*.css",
-    "./asciidoc": "./dist/components/src/asciidoc/index.js",
-    "./syntax": "./dist/components/src/syntax/index.js",
-    "./ui": "./dist/components/src/ui/index.js",
-    "./icons": "./dist/icons/index.js",
-    "./icons/react": "./dist/icons/react/index.js"
-  },
   "scripts": {
     "dev": "tsx scripts/invoice-server.ts dev",
     "invoice:db": "tsx scripts/db-local.ts",
@@ -23,101 +14,61 @@
     "invoice:server:test": "vp run invoice:build && INVOICE_PDF_SMOKE=1 vp test run test/invoice-server.test.ts test/invoice-server-pdf.test.ts",
     "invoice:build": "astro build --root invoice",
     "invoice:check": "astro check --root invoice && tsc -p invoice/tsconfig.json",
-    "export-icons": "vp exec zx ./scripts/export-icons.md && vp run fmt",
-    "build": "vp pack",
-    "release": "npm publish --provenance",
+    "build": "npm run invoice:build",
     "lint": "vp lint",
     "fmt": "vp fmt && vp run astro:format",
     "test": "vp test run",
     "tsc": "tsc",
-    "color-gen:watch": "tsx watch color-gen/generate.ts",
-    "color-gen:dev": "vp dev --config color-gen/vite.config.ts color-gen",
-    "color-gen:apply": "tsx color-gen/apply-colors.ts",
-    "preview:dev": "vp dev --config preview/vite.config.ts",
-    "design-md": "node scripts/design-md.mjs",
-    "design-md:check": "node scripts/design-md.mjs --check",
     "invoice:vale:install": "node scripts/install-vale.mjs",
     "invoice:prose": "tsx scripts/invoice-prose.ts",
     "invoice:format": "vp fmt invoice test/invoice.test.ts scripts/invoice-template.mjs scripts/invoice-prose.ts scripts/install-vale.mjs scripts/vale && vp run astro:format",
     "invoice:format:check": "vp fmt --check invoice test/invoice.test.ts scripts/invoice-template.mjs scripts/invoice-prose.ts scripts/install-vale.mjs scripts/vale && vp run astro:format:check",
     "check": "vp check",
     "check:all": "vp run check-all",
-    "preview:build": "vp build --config preview/vite.config.ts",
-    "color-gen:build": "vp build --config color-gen/vite.config.ts color-gen",
     "astro:format": "prettier --config prettier.astro.config.mjs --write \"invoice/**/*.astro\"",
-    "astro:format:check": "prettier --config prettier.astro.config.mjs --check \"invoice/**/*.astro\""
+    "astro:format:check": "prettier --config prettier.astro.config.mjs --check \"invoice/**/*.astro\"",
+    "start": "tsx scripts/invoice-server.ts start",
+    "invoice:editor:test": "tsx scripts/check-invoice-editor.ts"
   },
-  "author": "Oxide Computer Company <bots@oxidecomputer.com>",
-  "license": "MPL 2.0",
+  "license": "MPL-2.0",
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/mdx": "^8.0.1",
     "@astrojs/react": "^6.0.5",
-    "@figma-export/cli": "^6.3.0",
-    "@figma-export/output-components-as-svg": "^6.2.4",
-    "@figma-export/output-components-as-svgr": "^6.2.4",
-    "@figma-export/transform-svg-with-svgo": "^6.2.4",
     "@stisla/style": "^3.0.1",
-    "@svgr/plugin-jsx": "^8.1.0",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/culori": "^4.0.1",
+    "@types/node": "^24.5.2",
     "@types/pg": "^8.23.1",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@types/svg-sprite": "^0.0.39",
-    "@vitejs/plugin-react": "^5.2.0",
     "astro": "^7.3.2",
-    "culori": "^4.0.2",
-    "dedent": "^1.7.0",
     "embedded-postgres": "^18.4.0-beta.17",
-    "glob": "^11.0.3",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
-    "svg-sprite": "^2.0.4",
-    "tsx": "^4.20.5",
     "typescript": "^5.9.3",
     "vite-plus": "0.3.1",
-    "yaml": "^2.9.0",
-    "zx": "^8.8.3"
-  },
-  "peerDependencies": {
-    "@asciidoctor/core": "^3.0.0",
-    "@oxide/react-asciidoc": "^2.1.1",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "yaml": "^2.9.0"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",
-    "@floating-ui/react": "^0.27.16",
-    "@headlessui/react": "^2.2.8",
-    "@radix-ui/react-accordion": "^1.2.12",
-    "@radix-ui/react-tabs": "^1.1.13",
+    "@oxide/design-system": "6.7.0",
     "better-auth": "^1.7.4",
-    "classnames": "^2.5.1",
     "kugiri": "^0.5.2",
     "pg": "^8.23.0",
     "playwright": "^1.63.0",
-    "shiki": "^4.4.3",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "tsx": "^4.20.5",
     "zod": "^4.6.1"
   },
-  "files": [
-    "design.md",
-    "styles/*.css",
-    "icons/**/*.svg",
-    "dist/**"
-  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oxidecomputer/design-system.git"
+    "url": "git+https://github.com/kmshdev/Invoice-design.git"
   },
   "bugs": {
-    "url": "https://github.com/oxidecomputer/design-system/issues"
+    "url": "https://github.com/kmshdev/Invoice-design/issues"
   },
-  "homepage": "https://github.com/oxidecomputer/design-system#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
+  "homepage": "https://github.com/kmshdev/Invoice-design#readme",
   "devEngines": {
     "runtime": {
       "name": "node",

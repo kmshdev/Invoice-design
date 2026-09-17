@@ -1,6 +1,6 @@
+import { NextArrow12Icon as ArrowIcon } from '@oxide/design-system/icons/react'
 import { useState } from 'react'
 
-import ArrowIcon from '../../icons/react/NextArrow12Icon'
 import { request } from '../application/client'
 import Field from './Field'
 
