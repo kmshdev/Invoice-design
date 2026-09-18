@@ -1,0 +1,43 @@
+---
+import WorkflowPanels from '../WorkflowPanels'
+---
+
+<section
+  class="content-section evidence site-frame"
+  id="product"
+  aria-labelledby="product-title"
+>
+  <div class="section-rail"><p class="eyebrow section-inner">// THE WORKSPACE</p></div>
+  <div class="section-inner section-content">
+    <h2 id="product-title">Built for the work.<br />Ready for the invoice.</h2>
+    <p class="section-description">
+      Your details, line items, and final document. Together, not across a dozen tabs.
+    </p>
+    <WorkflowPanels client:load />
+    <details class="workspace-preview-disclosure">
+      <summary>Inside the workspace <span aria-hidden="true">+</span></summary>
+      <a
+        class="product-preview block"
+        href="/create"
+        aria-label="Try the invoice workspace"
+      >
+        <div class="preview-topline">
+          <span>SHARDLANE / INVOICE EDITOR</span><span>OPEN WORKSPACE ↗</span>
+        </div>
+        <img
+          src="/images/shardlane-workspace.png"
+          width="1440"
+          height="1000"
+          alt="Actual Shardlane workspace with editable invoice fields and the dark A4 document preview"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+      <div class="preview-note">
+        <span>Fictional example invoice · Live application screenshot</span><a
+          href="/create">Make it yours ↗</a
+        >
+      </div>
+    </details>
+  </div>
+</section>

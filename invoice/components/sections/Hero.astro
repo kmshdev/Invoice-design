@@ -1,0 +1,42 @@
+---
+import HeroTerminal from '../HeroTerminal'
+import { frontmatter } from '../../content/invoice.mdx'
+import { parseInvoice } from '../../model'
+const example = parseInvoice(JSON.stringify(frontmatter))
+---
+
+<section class="hero site-frame" aria-labelledby="hero-title">
+  <div class="hero-stage">
+    <div class="hero-copy">
+      <a class="hero-announcement" href="#open-source"
+        >OPEN SOURCE <span>Your invoices. Your data.</span>
+        <span aria-hidden="true">↗</span></a
+      >
+      <h1 id="hero-title">
+        <span class="hero-name">Shardlane</span><span class="hero-muted">Open-source</span
+        ><br />invoice generation.
+      </h1>
+      <p class="hero-description">
+        Create, review, and export invoices in one place.<br />
+        Start in your browser. No account required.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="/create"
+          >Create an invoice <span aria-hidden="true">↗</span></a
+        >
+        <a class="button secondary" href="/template-preview"
+          >View template <span aria-hidden="true">↗</span></a
+        >
+      </div>
+    </div>
+    <HeroTerminal client:load invoice={example} />
+  </div>
+  <div class="section-inner format-strip">
+    <p>From the first draft to the final document.</p>
+    <div class="format-list" aria-label="Supported invoice capabilities">
+      <span>PDF export</span><span>JSON source</span><span>8 currencies</span><span
+        >A4 documents</span
+      ><span>Open source</span>
+    </div>
+  </div>
+</section>

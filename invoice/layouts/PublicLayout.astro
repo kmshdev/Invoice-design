@@ -1,0 +1,44 @@
+---
+import '../public-site.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'Shardlane — Invoices, without the overhead.',
+  description = 'Shardlane is a focused invoice creator and workspace for independent work.',
+} = Astro.props
+---
+
+<!doctype html>
+<html lang="en" class="dark shardlane-site">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link
+      rel="preload"
+      href="/fonts/hyperlegible-sans.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/berkeley-mono-tx02.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <slot />
+  </body>
+</html>

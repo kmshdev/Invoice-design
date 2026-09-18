@@ -61,3 +61,6 @@ Thumbs.db
 /preview/dist/
 .vercel
 .env*
+docs/design-spec/target/
+.impeccable/
+.opencode/skills/motion/

@@ -1,0 +1,208 @@
+.shardlane-site .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 64px;
+  border-top: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+}
+
+.shardlane-site .feature-cell {
+  min-width: 0;
+  padding: 0;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shardlane-site .feature-link {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  color: inherit;
+  text-decoration: none;
+  background: var(--feature-surface);
+  transition:
+    background-color var(--motion-feedback) var(--ease-settle),
+    color var(--motion-feedback) var(--ease-settle);
+}
+
+.shardlane-site .feature-link--blue {
+  --feature-color: var(--color-feature-blue);
+  --feature-surface: var(--color-feature-blue-surface);
+}
+
+.shardlane-site .feature-link--green {
+  --feature-color: var(--color-feature-green);
+  --feature-surface: var(--color-feature-green-surface);
+}
+
+.shardlane-site .feature-link--amber {
+  --feature-color: var(--color-feature-amber);
+  --feature-surface: var(--color-feature-amber-surface);
+}
+
+.shardlane-site .feature-artwork {
+  position: relative;
+  display: grid;
+  min-height: 140px;
+  overflow: hidden;
+  place-items: center;
+  border-bottom: 1px solid color-mix(in srgb, var(--feature-color) 32%, var(--color-border));
+  background-color: var(--feature-surface);
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--feature-color) 14%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--feature-color) 14%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 20px 20px;
+}
+
+.shardlane-site .feature-artwork::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  opacity: 0;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--feature-color) 66%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 8px 8px;
+  transition: opacity 240ms var(--ease-settle);
+}
+
+.shardlane-site .feature-icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 140px;
+  height: 140px;
+  margin: 0;
+  color: var(--feature-color);
+  place-items: center;
+  transform: translate3d(0, 0, 0);
+  transition: transform 240ms var(--ease-settle);
+}
+
+.shardlane-site .feature-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.shardlane-site .feature-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px 24px 24px;
+}
+
+.shardlane-site .feature-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--feature-color);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.shardlane-site .feature-cell h3 {
+  margin: 0;
+  color: var(--feature-color);
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.shardlane-site .feature-cell .feature-copy > p:last-child {
+  margin: 16px 0 0;
+  color: color-mix(in srgb, white 76%, var(--feature-color));
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+@media (hover: hover) {
+  .shardlane-site .feature-link:hover {
+    background-color: color-mix(in srgb, var(--feature-color) 8%, var(--feature-surface));
+  }
+
+  .shardlane-site .feature-link:hover .feature-artwork::after {
+    opacity: 0.32;
+  }
+
+  .shardlane-site .feature-link:hover .feature-icon {
+    transform: translate3d(5px, -5px, 0);
+  }
+}
+
+.shardlane-site .feature-link:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--feature-color);
+  outline-offset: -2px;
+}
+
+.shardlane-site .feature-link:active .feature-icon {
+  transform: translate3d(2px, -2px, 0);
+}
+
+@media (max-width: 900px) {
+  .shardlane-site .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .shardlane-site .feature-grid {
+    grid-template-columns: 1fr;
+    margin-top: 32px;
+  }
+
+  .shardlane-site .feature-artwork {
+    min-height: 140px;
+  }
+
+  .shardlane-site .feature-copy {
+    padding: 16px 20px 20px;
+  }
+
+  .shardlane-site .feature-action {
+    margin-bottom: 12px;
+  }
+
+  .shardlane-site .feature-cell h3 {
+    font-size: 20px;
+  }
+
+  .shardlane-site .feature-cell .feature-copy > p:last-child {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shardlane-site .feature-link,
+  .shardlane-site .feature-artwork::after,
+  .shardlane-site .feature-icon {
+    transition-duration: 0ms;
+  }
+
+  .shardlane-site .feature-link:hover .feature-icon,
+  .shardlane-site .feature-link:active .feature-icon {
+    transform: none;
+  }
+
+  .shardlane-site .feature-link:hover .feature-artwork::after {
+    opacity: 0;
+  }
+}
