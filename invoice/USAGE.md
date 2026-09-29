@@ -6,6 +6,15 @@ Run `npm run platform:visual:test` for the screenshot-led dark design checks whe
 
 Run `npm run platform:test` against the local preview (default `http://localhost:4387`, override with `INVOICE_TEST_BASE_URL`) for guest workflow, responsive, print/PDF, and axe-core checks. Decorative invoice frame glyphs are excluded from text-contrast checks; all actual invoice text and controls remain in scope.
 
+Run `npm run canvas:test` for the public `/create` canvas workflow, responsive
+layouts, keyboard behavior, print/PDF output, and axe-core checks. By default it starts
+an isolated loopback Astro server on an unused port, waits for an HTTP response, and
+stops only that server when checks finish or fail. To reuse a server you manage,
+explicitly set `INVOICE_TEST_BASE_URL` to a responsive loopback `http://` or `https://`
+URL; the command never terminates an externally managed server. `npm run check:all`
+runs this browser check after the built-server smoke checks and installs Chromium through
+the existing `invoice:server:check` dependency.
+
 In `/create`, valid edits save automatically to this browser. The **Invoices** navigation opens a searchable draft table. **Export JSON** backs up the selected invoice; **Import JSON** adds a separate copy. **Export PDF** opens the browser print dialog after validating the invoice; choose Save as PDF. It does not issue or archive an immutable server invoice. **Use example** is explicit and does not overwrite a draft. Clearing site data removes local drafts, so export them first. Guest drafts are not uploaded automatically on sign-in; import their JSON into the cloud workspace when needed.
 
 The authenticated workspace remains an Astro application with a React editor, PostgreSQL invoice records, and authenticated workspaces. Its workbench uses the published Stisla v3 (`@stisla/style`) Tailwind v4 theme and native button and seamless table components. It consumes the public `@oxide/design-system/icons/react` icon barrel rather than repository implementation files.

@@ -114,6 +114,10 @@ export default defineConfig({
       'invoice:server:check': {
         command: 'vp run invoice:browser && vp run invoice:server:test',
       },
+      'canvas:ci': {
+        command: 'vp run canvas:test',
+        dependsOn: ['invoice:server:check'],
+      },
       'check-all': {
         command: 'node -e "console.log(\'All toolchain checks passed\')"',
         dependsOn: [
@@ -121,6 +125,7 @@ export default defineConfig({
           'test',
           'invoice:check',
           'invoice:server:check',
+          'canvas:ci',
           'invoice:prose',
           'astro:format:check',
         ],

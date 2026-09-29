@@ -3,8 +3,15 @@ import { readFile, mkdir } from 'node:fs/promises'
 import { chromium, type Page } from 'playwright'
 
 import { localDraftKey } from '../invoice/application/localDrafts'
+import { checkSourceRegressions } from './check-source-regressions'
+import { checkWorkflowRegressions } from './check-workflow-regressions'
 
-const base = new URL(process.env.INVOICE_TEST_BASE_URL || 'http://127.0.0.1:4395')
+const configuredBase = process.env.INVOICE_TEST_BASE_URL
+assert(
+  configuredBase,
+  'Canvas workspace checks require INVOICE_TEST_BASE_URL from the runner.',
+)
+const base = new URL(configuredBase)
 assert(['localhost', '127.0.0.1', '[::1]'].includes(base.hostname))
 const browserUrl = process.env.INVOICE_TEST_BROWSER_URL
 if (browserUrl) {
@@ -103,6 +110,23 @@ async function audit(target: Page) {
     }))
   })
   assert.deepEqual(violations, [], `${target.url()} accessibility`)
+}
+async function runRegression(
+  name: string,
+  check: (target: Page, targetBase: URL) => Promise<void>,
+) {
+  const regressionContext = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+  })
+  const regressionPage = await regressionContext.newPage()
+  regressionPage.on('pageerror', (error) => errors.push(`${name}: ${error.message}`))
+  try {
+    await check(regressionPage, base)
+  } catch (error) {
+    throw new Error(`${name} regressions failed.`, { cause: error })
+  } finally {
+    await regressionContext.close()
+  }
 }
 try {
   await page.goto(new URL('/create?design=atelier', base).href)
@@ -250,6 +274,8 @@ try {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await version('orbit')
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+  await runRegression('Source', checkSourceRegressions)
+  await runRegression('Workflow', checkWorkflowRegressions)
   assert.deepEqual(errors, [])
   console.log(
     'Canvas checks passed: 5 designs, populated sample, contextual editing, retained data, zoom/paper modes, JSON validation/export, print/PDF, mobile/keyboard/reduced motion, and axe-core.',

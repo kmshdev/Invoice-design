@@ -29,7 +29,7 @@
     "start": "tsx scripts/invoice-server.ts start",
     "invoice:editor:test": "tsx scripts/check-invoice-editor.ts",
     "platform:test": "tsx scripts/check-shardlane.ts",
-    "canvas:test": "tsx scripts/check-canvas-workspace.ts",
+    "canvas:test": "tsx scripts/run-canvas-workspace.ts",
     "platform:visual:test": "tsx scripts/check-target-design.ts",
     "platform:audit:test": "tsx scripts/check-landing-audit.ts",
     "invoice:pdf:build": "node invoice/pdf/build.mjs",

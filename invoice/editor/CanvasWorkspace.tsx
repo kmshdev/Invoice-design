@@ -58,6 +58,7 @@ export default function CanvasWorkspace({
 }) {
   const [activeIntent, setActiveIntent] = useState<CanvasIntent>('client')
   const [inspectorOpen, setInspectorOpen] = useState(false)
+  const [sourceResetKey, setSourceResetKey] = useState(0)
   const dialog = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
   const dragControls = useDragControls()
@@ -70,6 +71,7 @@ export default function CanvasWorkspace({
   function canChangeContext() {
     if (!sourceDirty) return true
     if (!window.confirm('Discard unapplied JSON changes?')) return false
+    setSourceResetKey((key) => key + 1)
     onSourceDirty(false)
     return true
   }
@@ -85,6 +87,7 @@ export default function CanvasWorkspace({
     opener.current?.focus()
   }
   function chooseDesign(next: CanvasDesign) {
+    if (next === design) return
     if (!canChangeContext()) return
     setInspectorOpen(false)
     onDesign(next)
@@ -104,6 +107,7 @@ export default function CanvasWorkspace({
         invoice={invoice}
         update={update}
         onSourceDirty={onSourceDirty}
+        sourceResetKey={sourceResetKey}
       />
     </div>
   )
