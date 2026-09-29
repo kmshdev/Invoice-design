@@ -1,8 +1,16 @@
 import assert from 'node:assert/strict'
-import type { Page } from 'playwright'
+import type { Dialog, Page } from 'playwright'
 
 async function resetTo(page: Page, base: URL, design: 'focus' | 'ledger') {
-  await page.goto(base.href)
+  const acceptBeforeUnload = async (dialog: Dialog) => {
+    if (dialog.type() === 'beforeunload') await dialog.accept()
+  }
+  page.on('dialog', acceptBeforeUnload)
+  try {
+    await page.goto(base.href)
+  } finally {
+    page.off('dialog', acceptBeforeUnload)
+  }
   await page.evaluate(() => localStorage.clear())
   await page.goto(new URL(`/create?design=${design}&example=1`, base).href)
   await page.locator(`.design-${design}`).waitFor()
