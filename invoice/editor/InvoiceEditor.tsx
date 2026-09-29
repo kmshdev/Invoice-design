@@ -26,6 +26,7 @@ export default function InvoiceEditor({
   disabled,
   onSourceDirty,
   editableReference = false,
+  initialSourceMode = false,
 }: {
   invoice: Invoice
   update: (patch: Partial<Invoice>) => void
@@ -33,9 +34,10 @@ export default function InvoiceEditor({
   disabled: boolean
   onSourceDirty: (dirty: boolean) => void
   editableReference?: boolean
+  initialSourceMode?: boolean
 }) {
   const [section, setSection] = useState<(typeof sections)[number]>('Details')
-  const [sourceMode, setSourceMode] = useState(false)
+  const [sourceMode, setSourceMode] = useState(initialSourceMode)
   const [source, setSource] = useState('')
   const [sourceDirty, setSourceDirty] = useState(false)
   const [sourceError, setSourceError] = useState('')
@@ -70,6 +72,7 @@ export default function InvoiceEditor({
             <button
               type="button"
               aria-label="Edit form"
+              title="Edit form"
               aria-pressed={!sourceMode}
               className={!sourceMode ? 'selected' : ''}
               onClick={() => changeMode(false)}
@@ -79,6 +82,7 @@ export default function InvoiceEditor({
             <button
               type="button"
               aria-label="Edit JSON source"
+              title="Edit JSON source"
               aria-pressed={sourceMode}
               className={sourceMode ? 'selected' : ''}
               onClick={() => changeMode(true)}
@@ -211,8 +215,8 @@ export default function InvoiceEditor({
                       Due {displayDate(dueDate(invoice.issued, invoice.paymentTerms))}
                     </p>
                   </section>
-                  <section className="form-section">
-                    <h2>Tax and export particulars</h2>
+                  <details className="form-section advanced-fields">
+                    <summary>Tax and export particulars</summary>
                     <div className="field-stack">
                       {(
                         ['taxLabel', 'taxIdLabel', 'declaration', 'exchangeNote'] as const
@@ -236,7 +240,7 @@ export default function InvoiceEditor({
                         </Field>
                       ))}
                     </div>
-                  </section>
+                  </details>
                   <section className="form-section">
                     <h2>From</h2>
                     <PartyEditor

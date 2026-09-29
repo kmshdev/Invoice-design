@@ -1,11 +1,13 @@
+import './studio.css'
 import {
   Add12Icon as AddIcon,
   Checkmark12Icon as CheckIcon,
   Copy12Icon as CopyIcon,
   Document16Icon as DocumentIcon,
   DownloadOutline12Icon as DownloadIcon,
-  Moon12Icon as MoonIcon,
-  Sun12Icon as SunIcon,
+  MenuOpen12Icon as MenuIcon,
+  NextArrow12Icon as ArrowIcon,
+  Search16Icon as SearchIcon,
 } from '@oxide/design-system/icons/react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -16,17 +18,17 @@ import {
   readLocalDrafts,
   type LocalRecord,
 } from '../application/localDrafts'
-import InvoiceDocument from '../components/InvoiceDocument'
 import {
   exportProblems,
-  issuanceProblems,
   money,
   parseInvoice,
   totals,
   validateInvoice,
   type Invoice,
 } from '../model'
-import InvoiceEditor from './InvoiceEditor'
+import { canvasDesigns, type CanvasDesign } from './canvas-types'
+import CanvasWorkspace from './CanvasWorkspace'
+import InvoiceActions from './InvoiceActions'
 
 export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Invoice }) {
   const [records, setRecords] = useState<LocalRecord[]>([])
@@ -35,13 +37,15 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
   const [view, setView] = useState<'editor' | 'invoices'>('editor')
   const [loaded, setLoaded] = useState(false)
   const [search, setSearch] = useState('')
-  const [light, setLight] = useState(false)
+  const [design, setDesign] = useState<CanvasDesign>('atelier')
   const [sourceDirty, setSourceDirty] = useState(false)
   const [error, setError] = useState('')
   const [storageError, setStorageError] = useState('')
   const [blockedRaw, setBlockedRaw] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const input = useRef<HTMLInputElement>(null)
+  const shell = useRef<HTMLDivElement>(null)
+  const header = useRef<HTMLElement>(null)
   const preview = records.find((record) => record.id === selected)?.data ?? null
   const issues = value ? validateInvoice(value) : []
   const unsaved = sourceDirty || issues.length > 0 || !!storageError
@@ -60,12 +64,33 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
         setView('invoices')
         return
       }
-      if (!saved.length) saved = [newLocalRecord([])]
+      if (!saved.length) saved = [newLocalRecord([], initialInvoice)]
+      const params = new URL(location.href).searchParams
+      const requestedDesign = params.get('design')
+      if (canvasDesigns.some((option) => option.id === requestedDesign))
+        setDesign(requestedDesign as CanvasDesign)
+      const lastSelected = localStorage.getItem(`${localDraftKey}:selected`)
+      let active = saved.find((record) => record.id === lastSelected) ?? saved[0]
+      if (params.get('example') === '1') {
+        const example = saved.find(
+          (record) => record.data.reference === initialInvoice.reference,
+        )
+        if (example) active = example
+        else if (saved.length < 100) {
+          active = newLocalRecord(saved, initialInvoice)
+          saved = [active, ...saved]
+        }
+      }
+      if (params.has('example')) {
+        const url = new URL(location.href)
+        url.searchParams.delete('example')
+        history.replaceState(null, '', url)
+      }
       setRecords(saved)
-      setSelected(saved[0].id)
-      setValue(saved[0].data)
+      setSelected(active.id)
+      setValue(active.data)
     } catch {
-      const first = newLocalRecord([])
+      const first = newLocalRecord([], initialInvoice)
       setRecords([first])
       setSelected(first.id)
       setValue(first.data)
@@ -73,19 +98,20 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
     } finally {
       setLoaded(true)
     }
-  }, [])
+  }, [initialInvoice])
 
   useEffect(() => {
     if (!loaded || blockedRaw !== null) return
     try {
       localStorage.setItem(localDraftKey, JSON.stringify(records))
+      localStorage.setItem(`${localDraftKey}:selected`, selected)
       setStorageError('')
     } catch {
       setStorageError(
         'Your changes could not be saved in this browser. Export JSON before leaving.',
       )
     }
-  }, [records, loaded, blockedRaw])
+  }, [records, loaded, blockedRaw, selected])
 
   useEffect(() => {
     if (!unsaved) return
@@ -93,6 +119,38 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [unsaved])
+
+  useEffect(() => {
+    if (!loaded || !header.current) return
+    const observer = new ResizeObserver(([entry]) => {
+      shell.current?.style.setProperty(
+        '--studio-header-height',
+        `${entry.target.getBoundingClientRect().height}px`,
+      )
+    })
+    observer.observe(header.current)
+    return () => observer.disconnect()
+  }, [loaded])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const close = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+        document.querySelector<HTMLButtonElement>('.library-toggle')?.focus()
+      }
+    }
+    const desktop = window.matchMedia('(min-width: 1001px)')
+    const resize = () => {
+      if (desktop.matches) setMobileOpen(false)
+    }
+    document.addEventListener('keydown', close)
+    desktop.addEventListener('change', resize)
+    return () => {
+      document.removeEventListener('keydown', close)
+      desktop.removeEventListener('change', resize)
+    }
+  }, [mobileOpen])
 
   function canLeave() {
     return (
@@ -175,16 +233,33 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
     )
 
   return (
-    <div className="app-shell guest-shell">
+    <div
+      className={`app-shell guest-shell studio-shell ${view === 'editor' ? 'canvas-shell' : ''}`}
+      data-design={design}
+      ref={shell}
+    >
+      {mobileOpen && (
+        <button
+          className="navigation-backdrop"
+          aria-label="Close workspace navigation"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
       <aside
+        id="workspace-navigation"
         className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
         aria-label="Workspace navigation"
       >
-        <a href="/" className="app-brand">
+        <a
+          href="/"
+          className="app-brand"
+          aria-label="Shardlane home"
+          title="Shardlane home"
+        >
           <span className="brand-symbol" aria-hidden="true">
             [s]
           </span>{' '}
-          Shardlane
+          <span className="brand-name">Shardlane</span>
         </a>
         <div className="workspace-identity">
           <span className="workspace-avatar" aria-hidden="true">
@@ -196,15 +271,20 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
         </div>
         <button
           className="new-invoice"
+          aria-label="New invoice"
+          title="New invoice"
           disabled={blockedRaw !== null}
           onClick={() => create()}
         >
           <AddIcon aria-hidden="true" />
-          New invoice
+          <span>New invoice</span>
         </button>
         <span className="nav-eyebrow">WORKSPACE</span>
         <button
           className={`workspace-nav ${view === 'invoices' ? 'active' : ''}`}
+          aria-label="Invoices"
+          title="Invoices"
+          aria-pressed={view === 'invoices'}
           onClick={() => {
             if (canLeave()) {
               setView('invoices')
@@ -213,13 +293,14 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
           }}
         >
           <DocumentIcon aria-hidden="true" />
-          Invoices<span className="count">{records.length}</span>
+          <span>Invoices</span>
+          <span className="count">{records.length}</span>
         </button>
-        <a className="workspace-nav" href="/template-preview">
+        <a className="workspace-nav" href="/template-preview" title="Invoice template">
           <CopyIcon aria-hidden="true" />
           Invoice template
         </a>
-        <a className="workspace-nav" href="/workspace">
+        <a className="workspace-nav" href="/workspace" title="Cloud workspace">
           <CheckIcon aria-hidden="true" />
           Cloud workspace
         </a>
@@ -229,6 +310,9 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
             <button
               key={record.id}
               className={`draft-link ${record.id === selected && view === 'editor' ? 'active' : ''}`}
+              aria-current={
+                record.id === selected && view === 'editor' ? 'page' : undefined
+              }
               onClick={() => open(record)}
             >
               <span className="draft-client">
@@ -241,84 +325,110 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <a className="workspace-nav" href="https://github.com/kmshdev/Invoice-design">
-            Open source <span aria-hidden="true">↗</span>
+          <a
+            className="workspace-nav"
+            href="https://github.com/kmshdev/Invoice-design"
+            aria-label="Open source"
+            title="Open source"
+          >
+            <span>Open source</span>
+            <ArrowIcon aria-hidden="true" />
           </a>
-          <a className="workspace-account" href="/login">
+          <a
+            className="workspace-account"
+            href="/login"
+            aria-label="Sign in"
+            title="Sign in"
+          >
             <span className="workspace-avatar" aria-hidden="true">
               G
             </span>
             <span>
-              Guest workspace<small>Sign in for cloud storage</small>
+              Guest workspace<small>Sign in</small>
             </span>
-            <span aria-hidden="true">↗</span>
+            <ArrowIcon aria-hidden="true" />
           </a>
         </div>
       </aside>
       <main id="main" className="main-area">
-        <div className="topbar">
-          <div className="breadcrumb">
-            <button
-              className="library-toggle"
-              aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              Workspace
-            </button>
-            <span>/</span>
-            <button
-              onClick={() => {
-                if (canLeave()) setView('invoices')
-              }}
-            >
-              Invoices
-            </button>
-            {view === 'editor' && (
-              <>
-                <span>/</span>
-                <span>{value?.reference}</span>
-              </>
-            )}
-          </div>
-          <span className="save-status" role="status">
-            <span className="status-dot" />
-            {unsaved
-              ? 'Unsaved changes'
-              : blockedRaw !== null
-                ? 'Recovery needed'
-                : 'Saved on this device'}
-          </span>
-        </div>
-        <header className="workspace-header">
-          <div>
-            <div className="section-eyebrow">YOUR WORK, WELL DOCUMENTED</div>
+        <header className="workspace-header" ref={header}>
+          <button
+            className="library-toggle"
+            aria-label="Workspace"
+            title="Toggle workspace navigation"
+            aria-controls="workspace-navigation"
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            <MenuIcon aria-hidden="true" />
+          </button>
+          <div className="workspace-title">
             <div className="heading-line">
               <h1>{view === 'editor' ? 'Invoice editor' : 'Invoices'}</h1>
               <span className="draft-badge">
-                {view === 'editor' ? 'Draft' : records.length}
+                {view === 'editor'
+                  ? value?.reference.startsWith('DEMO-')
+                    ? 'Example data'
+                    : 'Draft'
+                  : records.length}
+              </span>
+            </div>
+            <div className="document-context">
+              {view === 'editor' && <span>{value?.reference || 'Unnumbered draft'}</span>}
+              <span
+                className="save-status"
+                role="status"
+                data-unsaved={unsaved || blockedRaw !== null}
+              >
+                <span className="status-dot" aria-hidden="true" />
+                {unsaved
+                  ? 'Unsaved changes'
+                  : blockedRaw !== null
+                    ? 'Recovery needed'
+                    : 'Saved on this device'}
               </span>
             </div>
           </div>
           <div className="header-actions">
+            <InvoiceActions>
+              {view === 'editor' && (
+                <>
+                  <button
+                    disabled={!value || sourceDirty || !!issues.length}
+                    onClick={exportJson}
+                  >
+                    <DownloadIcon aria-hidden="true" />
+                    Export JSON
+                  </button>
+                  <button
+                    disabled={!value || sourceDirty || !!issues.length}
+                    onClick={() =>
+                      value && create({ ...value, reference: `${value.reference}-COPY` })
+                    }
+                  >
+                    <CopyIcon aria-hidden="true" />
+                    Duplicate
+                  </button>
+                </>
+              )}
+              <button disabled={blockedRaw !== null} onClick={() => input.current?.click()}>
+                <DownloadIcon aria-hidden="true" />
+                Import JSON
+              </button>
+              <button disabled={blockedRaw !== null} onClick={() => create(initialInvoice)}>
+                <DocumentIcon aria-hidden="true" />
+                Use example
+              </button>
+            </InvoiceActions>
             {view === 'editor' ? (
-              <>
-                <button
-                  className="button secondary"
-                  disabled={!value || sourceDirty || !!issues.length}
-                  onClick={exportJson}
-                >
-                  <DownloadIcon aria-hidden="true" />
-                  Export JSON
-                </button>
-                <button
-                  className="button primary"
-                  disabled={!value || sourceDirty || !!issues.length}
-                  onClick={() => void print()}
-                >
-                  <DownloadIcon aria-hidden="true" />
-                  Export PDF
-                </button>
-              </>
+              <button
+                className="button primary"
+                disabled={!value || sourceDirty || !!issues.length}
+                onClick={() => void print()}
+              >
+                <DownloadIcon aria-hidden="true" />
+                Export PDF
+              </button>
             ) : (
               <button
                 className="button primary"
@@ -373,95 +483,23 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
           </p>
         )}
         {view === 'editor' && value && preview ? (
-          <>
-            <div className="document-actions">
-              <div>
-                <span className="status-pill">Draft</span>
-                <span>{value.billTo.name || 'New client'}</span>
-              </div>
-              <div>
-                <button
-                  disabled={sourceDirty || !!issues.length}
-                  onClick={() => create({ ...value, reference: `${value.reference}-COPY` })}
-                >
-                  <CopyIcon aria-hidden="true" />
-                  Duplicate
-                </button>
-                <button
-                  disabled={blockedRaw !== null}
-                  onClick={() => input.current?.click()}
-                >
-                  <DownloadIcon aria-hidden="true" />
-                  Import JSON
-                </button>
-                <button onClick={() => create(initialInvoice)}>Use example</button>
-              </div>
-            </div>
-            <div className="workbench">
-              <InvoiceEditor
-                key={selected}
-                invoice={value}
-                update={update}
-                issues={issuanceProblems(value)}
-                disabled={false}
-                onSourceDirty={setSourceDirty}
-                editableReference
-              />
-              <section className="preview-panel" aria-label="Document workspace">
-                <div className="preview-toolbar">
-                  <div className="preview-label">
-                    <DocumentIcon aria-hidden="true" />
-                    Live preview <span className="paper-size">A4</span>
-                  </div>
-                  <div
-                    className="paper-toggle"
-                    role="group"
-                    aria-label="Invoice appearance"
-                  >
-                    <button
-                      title="Dark invoice"
-                      aria-label="Dark invoice"
-                      aria-pressed={!light}
-                      className={!light ? 'selected' : ''}
-                      onClick={() => setLight(false)}
-                    >
-                      <MoonIcon aria-hidden="true" />
-                    </button>
-                    <button
-                      title="Light invoice"
-                      aria-label="Light invoice"
-                      aria-pressed={light}
-                      className={light ? 'selected' : ''}
-                      onClick={() => setLight(true)}
-                    >
-                      <SunIcon aria-hidden="true" />
-                    </button>
-                  </div>
-                </div>
-                <div className="preview-scroll">
-                  <InvoiceDocument invoice={preview} light={light} />
-                  <div className="preview-caption">
-                    <span>
-                      {preview.reference} · {preview.currency}
-                    </span>
-                    <span>Draft · not issued</span>
-                  </div>
-                </div>
-                <div className="preview-summary">
-                  <span>Total due</span>
-                  <strong>{money(totals(preview).total, preview.currency)}</strong>
-                </div>
-              </section>
-            </div>
-            <footer className="workspace-footer">
-              <span>
-                Stored in this browser · Export a backup before clearing site data
-              </span>
-              <a href="/workspace">
-                Open cloud workspace <span aria-hidden="true">↗</span>
-              </a>
-            </footer>
-          </>
+          <CanvasWorkspace
+            key={selected}
+            invoice={value}
+            preview={preview}
+            update={update}
+            design={design}
+            onDesign={(next) => {
+              setDesign(next)
+              const url = new URL(location.href)
+              url.searchParams.set('design', next)
+              history.replaceState(null, '', url)
+            }}
+            onExport={() => void print()}
+            exportDisabled={!value || sourceDirty || !!issues.length}
+            sourceDirty={sourceDirty}
+            onSourceDirty={setSourceDirty}
+          />
         ) : (
           <section className="invoice-library" aria-label="Invoice library">
             <div className="library-metrics">
@@ -491,6 +529,7 @@ export default function GuestWorkspace({ initialInvoice }: { initialInvoice: Inv
             <div className="library-controls">
               <h2>All invoices</h2>
               <label className="search-field">
+                <SearchIcon aria-hidden="true" />
                 <span className="sr-only">Search invoices</span>
                 <input
                   placeholder="Search by client or number…"

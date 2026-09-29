@@ -23,6 +23,7 @@ import {
 } from '../model'
 import CatalogTools from './CatalogTools'
 import InvoiceEditor from './InvoiceEditor'
+import './studio.css'
 
 export default function Workspace({
   initialInvoice,
@@ -81,7 +82,7 @@ export default function Workspace({
       </main>
     )
   return (
-    <div className="app-shell">
+    <div className="app-shell studio-shell cloud-shell">
       <aside
         className={`sidebar ${showLibrary ? 'mobile-open' : ''}`}
         aria-label="Invoice library"

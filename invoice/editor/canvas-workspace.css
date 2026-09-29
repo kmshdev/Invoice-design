@@ -1,0 +1,635 @@
+@media screen {
+  .shardlane-app .studio-shell.canvas-shell {
+    --canvas-bg: #e8e8e4;
+    --canvas-raised: #fafaf7;
+    --canvas-ink: #242723;
+    --canvas-muted: #5b6058;
+    --canvas-line: #cecfca;
+    --canvas-accent: #9c4034;
+    --canvas-error: #9d2929;
+    grid-template-columns: 72px minmax(0, 1fr);
+    color: var(--canvas-ink);
+    background: var(--canvas-bg);
+    color-scheme: light;
+  }
+  .shardlane-app .canvas-shell[data-design='orbit'] {
+    --canvas-bg: #171c19;
+    --canvas-raised: #242b26;
+    --canvas-ink: #edf2e9;
+    --canvas-muted: #a4b1a7;
+    --canvas-line: #3e4941;
+    --canvas-accent: #b7d990;
+    --canvas-error: #ffa2a2;
+    color-scheme: dark;
+  }
+  .shardlane-app .canvas-shell[data-design='focus'] {
+    --canvas-bg: #edf0f4;
+    --canvas-raised: #fafbfc;
+    --canvas-ink: #202937;
+    --canvas-muted: #596474;
+    --canvas-line: #cdd3dd;
+    --canvas-accent: #315cc4;
+  }
+  .shardlane-app .canvas-shell[data-design='ledger'] {
+    --canvas-bg: #f0f3ef;
+    --canvas-raised: #fafbf9;
+    --canvas-ink: #24372c;
+    --canvas-muted: #526557;
+    --canvas-line: #cbd6ce;
+    --canvas-accent: #28684a;
+  }
+  .shardlane-app .canvas-shell[data-design='dispatch'] {
+    --canvas-bg: #e6e7e4;
+    --canvas-raised: #fdfdfb;
+    --canvas-ink: #292c29;
+    --canvas-muted: #5b625a;
+    --canvas-line: #cbcec8;
+    --canvas-accent: #875318;
+  }
+  .shardlane-app .canvas-shell .sidebar {
+    padding: 22px 12px 16px;
+    background: var(--canvas-raised);
+    border-color: var(--canvas-line);
+    align-items: center;
+    overflow-x: hidden;
+  }
+  .shardlane-app .canvas-shell .sidebar .app-brand {
+    margin: 0 0 32px;
+    font-size: 18px;
+    color: var(--canvas-ink);
+  }
+  .shardlane-app .canvas-shell .brand-symbol {
+    color: var(--canvas-accent);
+  }
+  .shardlane-app .canvas-shell .brand-name,
+  .shardlane-app .canvas-shell .workspace-identity,
+  .shardlane-app .canvas-shell .nav-eyebrow,
+  .shardlane-app .canvas-shell .recent-heading,
+  .shardlane-app .canvas-shell .draft-list,
+  .shardlane-app .canvas-shell .sidebar .new-invoice > span,
+  .shardlane-app .canvas-shell .workspace-nav > span,
+  .shardlane-app .canvas-shell .workspace-account > span:not(.workspace-avatar) {
+    display: none;
+  }
+  .shardlane-app .canvas-shell .sidebar .new-invoice {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 20px;
+    padding: 0;
+    background: var(--canvas-ink);
+    color: var(--canvas-raised);
+    border-color: var(--canvas-ink);
+    border-radius: 8px;
+  }
+  .shardlane-app .canvas-shell .workspace-nav {
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 12px;
+    font-size: 0;
+    color: var(--canvas-muted);
+  }
+  .shardlane-app .canvas-shell .workspace-nav:hover {
+    color: var(--canvas-ink);
+    background: var(--canvas-bg);
+  }
+  .shardlane-app .canvas-shell .workspace-account {
+    border: 0;
+    padding: 10px 0 0;
+  }
+  .shardlane-app .canvas-shell .workspace-account > svg {
+    display: none;
+  }
+  .shardlane-app .canvas-shell .workspace-avatar {
+    color: var(--canvas-ink);
+    background: var(--canvas-bg);
+    border-color: var(--canvas-line);
+  }
+  .shardlane-app .canvas-shell .workspace-header {
+    min-height: 76px;
+    height: 76px;
+    padding: 14px 28px;
+    background: var(--canvas-bg);
+    border-color: var(--canvas-line);
+  }
+  .shardlane-app .canvas-shell .workspace-header h1 {
+    color: var(--canvas-ink);
+    font-size: 19px;
+  }
+  .shardlane-app .canvas-shell .document-context,
+  .shardlane-app .canvas-shell .save-status {
+    color: var(--canvas-muted);
+  }
+  .shardlane-app .canvas-shell .draft-badge {
+    background: var(--canvas-raised);
+    color: var(--canvas-muted);
+    border-color: var(--canvas-line);
+  }
+  .shardlane-app .canvas-shell .header-actions > .button.primary {
+    background: var(--canvas-ink);
+    color: var(--canvas-raised);
+    border-color: var(--canvas-ink);
+  }
+  .shardlane-app .canvas-shell .invoice-actions summary,
+  .shardlane-app .canvas-shell .library-toggle {
+    border-color: var(--canvas-line);
+    color: var(--canvas-ink);
+    background: var(--canvas-raised);
+  }
+  .shardlane-app .canvas-shell .invoice-actions-popover {
+    background: var(--canvas-raised);
+    color: var(--canvas-ink);
+    border-color: var(--canvas-line);
+  }
+  .shardlane-app .canvas-shell .invoice-actions-popover button:hover:not(:disabled) {
+    background: var(--canvas-bg);
+  }
+  .shardlane-app .canvas-shell .warning-banner {
+    background: #fff1d8;
+    color: #6b4616;
+  }
+  .canvas-lab {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    font-family: var(--font-sans);
+    color: var(--canvas-ink);
+    background: var(--canvas-bg);
+  }
+  .canvas-lab button {
+    font-family: var(--font-sans);
+  }
+  .canvas-lab button:focus-visible,
+  .canvas-lab a:focus-visible,
+  .canvas-lab summary:focus-visible,
+  .canvas-proof-scroll:focus-visible {
+    outline: 2px solid var(--canvas-accent);
+    outline-offset: 3px;
+  }
+  .canvas-design-switcher {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 24px;
+    min-height: 62px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--canvas-line);
+  }
+  .canvas-tuning {
+    position: relative;
+    flex-shrink: 0;
+    z-index: 6;
+  }
+  .canvas-tuning > summary {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    padding: 10px;
+    border: 1px solid var(--canvas-line);
+    border-radius: 6px;
+    color: var(--canvas-ink);
+    cursor: pointer;
+    font-size: 11px;
+    list-style: none;
+  }
+  .canvas-tuning > summary::-webkit-details-marker {
+    display: none;
+  }
+  .canvas-tuning-popover {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: min(300px, calc(100vw - 24px));
+    max-height: calc(100dvh - 210px);
+    overflow-y: auto;
+    border-radius: 8px;
+    background: #1d1d1f;
+    border: 1px solid #444;
+    box-shadow: 0 12px 36px #0004;
+  }
+  .canvas-version-label {
+    color: var(--canvas-muted);
+    font-family: var(--font-mono);
+    font-size: 9px;
+  }
+  .canvas-design-switcher > div[role='group'] {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+    min-width: 0;
+  }
+  .canvas-design-switcher > div[role='group'] > button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 5px;
+    color: var(--canvas-muted);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .canvas-design-switcher button[aria-pressed='true'] {
+    color: var(--canvas-ink);
+    background: var(--canvas-raised);
+  }
+  .design-version-number {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--canvas-muted);
+  }
+  .design-active-mark {
+    position: absolute;
+    height: 2px;
+    background: var(--canvas-accent);
+    bottom: -9px;
+    left: 12px;
+    right: 12px;
+  }
+  .design-glyph {
+    display: grid;
+    grid-template-columns: 5px 10px 5px;
+    width: 24px;
+    height: 20px;
+    gap: 2px;
+    align-items: stretch;
+    opacity: 0.7;
+  }
+  .design-glyph i {
+    display: block;
+    border: 1px solid currentColor;
+    border-radius: 1px;
+  }
+  .glyph-orbit {
+    transform: rotate(-8deg);
+    align-items: center;
+  }
+  .glyph-orbit i {
+    height: 8px;
+  }
+  .glyph-orbit i:nth-child(2) {
+    height: 18px;
+  }
+  .glyph-focus {
+    grid-template-columns: 9px 13px;
+  }
+  .glyph-focus i:last-child {
+    display: none;
+  }
+  .glyph-ledger {
+    grid-template-columns: 15px 7px;
+  }
+  .glyph-ledger i:first-child {
+    background: repeating-linear-gradient(transparent 0 4px, currentColor 4px 5px);
+  }
+  .glyph-ledger i:last-child {
+    display: none;
+  }
+  .glyph-dispatch {
+    position: relative;
+    grid-template-columns: 1fr;
+    width: 18px;
+  }
+  .glyph-dispatch i:nth-child(2) {
+    position: absolute;
+    inset: 10px -3px -2px;
+    background: var(--canvas-bg);
+  }
+  .glyph-dispatch i:last-child {
+    display: none;
+  }
+  .canvas-composition-slot,
+  .canvas-composition-transition {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .canvas-composition {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+  .canvas-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 38px;
+    flex-shrink: 0;
+    padding: 4px 24px;
+    border-top: 1px solid var(--canvas-line);
+    color: var(--canvas-muted);
+    font-size: 10px;
+  }
+  .canvas-status-bar > span,
+  .canvas-status-bar button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .canvas-status-bar button {
+    min-height: 30px;
+    color: var(--canvas-ink);
+    font-size: 11px;
+  }
+  .canvas-inspector-dialog {
+    position: fixed;
+    inset: 12px 12px 12px auto;
+    margin: 0;
+    width: min(440px, calc(100vw - 24px));
+    height: calc(100dvh - 24px);
+    max-height: none;
+    max-width: none;
+    padding: 0;
+    border: 1px solid var(--canvas-line);
+    border-radius: 8px;
+    color: var(--canvas-ink);
+    background: var(--canvas-raised);
+    box-shadow: -20px 0 90px #0003;
+    overflow: hidden;
+  }
+  .canvas-inspector-dialog::backdrop {
+    background: #15181655;
+    backdrop-filter: blur(2px);
+  }
+  .canvas-inspector {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    background: var(--canvas-raised);
+  }
+  .canvas-sheet-grip {
+    display: none;
+  }
+  .canvas-inspector-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--canvas-line);
+  }
+  .canvas-inspector-heading > div > span {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--canvas-muted);
+  }
+  .canvas-inspector-heading h2 {
+    margin: 6px 0 0;
+    color: var(--canvas-ink);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  .canvas-inspector-heading > button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--canvas-line);
+    border-radius: 6px;
+    color: var(--canvas-muted);
+  }
+  .canvas-inspector-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+    min-height: 0;
+    padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .canvas-inspector-footer {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--canvas-line);
+    color: var(--canvas-muted);
+    font-size: 11px;
+  }
+  .canvas-done {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    background: var(--canvas-ink);
+    color: var(--canvas-raised);
+    font-size: 13px;
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .field,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .field label {
+    color: var(--canvas-muted);
+    font-size: 12px;
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields input,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields select,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields textarea {
+    color: var(--canvas-ink);
+    background: var(--canvas-bg);
+    border: 1px solid var(--canvas-line);
+    border-radius: 5px;
+    font-size: 14px;
+    padding: 11px 12px;
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .form-section {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields h2,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .line-amount strong {
+    color: var(--canvas-ink);
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .field-hint,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .line-editor-heading,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .line-amount {
+    color: var(--canvas-muted);
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .editor-panel,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .editor-toolbar,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .editor-body {
+    background: var(--canvas-raised);
+    color: var(--canvas-ink);
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .button {
+    background: var(--canvas-ink);
+    color: var(--canvas-raised);
+    border-color: var(--canvas-ink);
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields .source-error,
+  .shardlane-app
+    .studio-shell.canvas-shell
+    .canvas-inspector-fields
+    .field
+    > small[role='alert'] {
+    color: var(--canvas-error);
+  }
+  .canvas-advanced {
+    border-top: 1px solid var(--canvas-line);
+    padding-top: 18px;
+  }
+  .canvas-advanced summary {
+    cursor: pointer;
+    font-size: 12px;
+    margin-bottom: 16px;
+    color: var(--canvas-muted);
+  }
+}
+@media screen and (max-width: 1100px) {
+  .canvas-version-label {
+    display: none;
+  }
+  .canvas-design-switcher {
+    gap: 10px;
+    padding-inline: 16px;
+  }
+}
+@media screen and (max-width: 1000px) {
+  .shardlane-app .studio-shell.canvas-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shardlane-app .canvas-shell .sidebar.mobile-open {
+    width: 72px;
+  }
+  .shardlane-app .canvas-shell .workspace-header {
+    padding-inline: 16px;
+  }
+}
+@media screen and (max-width: 760px) {
+  .shardlane-app .studio-shell.canvas-shell .workspace-header {
+    height: auto;
+    min-height: 116px;
+  }
+  .shardlane-app .canvas-shell .workspace-header h1 {
+    font-size: 18px;
+  }
+  .canvas-tuning > summary {
+    width: 40px;
+    justify-content: center;
+  }
+  .canvas-tuning > summary > span {
+    display: none;
+  }
+  .canvas-design-switcher {
+    padding: 6px 8px;
+    gap: 4px;
+    min-height: 62px;
+  }
+  .canvas-design-switcher > div[role='group'] {
+    gap: 2px;
+  }
+  .canvas-design-switcher > div[role='group'] > button {
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    padding: 5px 2px;
+    font-size: 9px;
+  }
+  .design-version-number {
+    display: none;
+  }
+  .design-glyph {
+    width: 19px;
+    height: 16px;
+    grid-template-columns: 4px 7px 4px;
+  }
+  .glyph-focus,
+  .glyph-ledger {
+    grid-template-columns: 8px 9px;
+  }
+  .glyph-dispatch {
+    grid-template-columns: 1fr;
+    width: 14px;
+  }
+  .design-active-mark {
+    bottom: -6px;
+    left: 8px;
+    right: 8px;
+  }
+  .canvas-status-bar {
+    padding-inline: 12px;
+    min-height: 34px;
+    font-size: 9px;
+  }
+  .canvas-inspector-dialog {
+    inset: auto 0 0;
+    width: 100%;
+    height: 78dvh;
+    border: 0;
+    border-radius: 24px 24px 0 0;
+  }
+  .canvas-sheet-grip {
+    display: grid;
+    place-items: center;
+    height: 24px;
+    flex-shrink: 0;
+    touch-action: none;
+    cursor: grab;
+  }
+  .canvas-sheet-grip > span {
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--canvas-line);
+  }
+  .canvas-inspector-heading {
+    padding: 8px 20px 16px;
+  }
+  .canvas-inspector-heading h2 {
+    font-size: 21px;
+  }
+  .canvas-inspector-fields {
+    padding: 20px;
+  }
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields input,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields textarea,
+  .shardlane-app .studio-shell.canvas-shell .canvas-inspector-fields select {
+    font-size: 16px;
+  }
+}
+@media print {
+  .canvas-lab,
+  .canvas-print-path {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: visible !important;
+    background: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .canvas-lab *:not(.canvas-print-path):not(.canvas-document):not(.canvas-document *) {
+    display: none !important;
+  }
+  .canvas-inspector-dialog,
+  .canvas-design-switcher,
+  .canvas-status-bar,
+  [data-dialkit-root] {
+    display: none !important;
+  }
+}
