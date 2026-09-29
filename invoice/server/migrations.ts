@@ -1,5 +1,7 @@
-import { createHash } from 'node:crypto'
 import type pg from 'pg'
+
+import { sha256 } from './checksum'
+import { withTransaction } from './transaction'
 
 // Kept byte-for-byte so existing self-hosted installations retain their checksum.
 export const legacyMigration = {
@@ -135,9 +137,7 @@ export const archiveMigration = {
 const migrations = [legacyMigration, archiveMigration]
 
 export async function migrate(database: pg.Pool) {
-  const client = await database.connect()
-  try {
-    await client.query('BEGIN')
+  await withTransaction(database, async (client) => {
     await client.query('SELECT pg_advisory_xact_lock(734865103)')
     await client.query(`CREATE TABLE IF NOT EXISTS invoice_schema_migrations (
       version integer PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now()
@@ -147,7 +147,7 @@ export async function migrate(database: pg.Pool) {
     )
     for (const row of applied.rows) {
       const known = migrations.find((item) => item.version === row.version)
-      if (!known || createHash('sha256').update(known.sql).digest('hex') !== row.checksum) {
+      if (!known || sha256(known.sql) !== row.checksum) {
         throw new Error(
           'Unknown or modified invoice migration; refusing to overwrite the active schema.',
         )
@@ -176,14 +176,8 @@ export async function migrate(database: pg.Pool) {
       await client.query(migration.sql)
       await client.query(
         'INSERT INTO invoice_schema_migrations(version, checksum) VALUES ($1, $2)',
-        [migration.version, createHash('sha256').update(migration.sql).digest('hex')],
+        [migration.version, sha256(migration.sql)],
       )
     }
-    await client.query('COMMIT')
-  } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
-  } finally {
-    client.release()
-  }
+  })
 }

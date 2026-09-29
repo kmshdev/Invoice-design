@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import type pg from 'pg'
 
 import type { InvoiceList, InvoiceRecord } from '../application/contracts'
@@ -8,8 +8,10 @@ import {
   validateDraftInvoice,
   type Invoice,
 } from '../model'
+import { sha256 } from './checksum'
 import { conflict, HttpError } from './errors'
 import { getPdfStorage, type PdfDisposition, type PdfStorage } from './storage'
+import { withTransaction } from './transaction'
 
 export const TEMPLATE_VERSION = 'invoice-v1'
 export type PdfRenderer = (invoice: Invoice) => Promise<Buffer>
@@ -59,7 +61,16 @@ function canonical(value: unknown): string {
   return JSON.stringify(value)
 }
 function hash(value: unknown) {
-  return createHash('sha256').update(canonical(value)).digest('hex')
+  return sha256(canonical(value))
+}
+async function appendRevision(
+  client: pg.PoolClient,
+  revision: Pick<InvoiceRecord, 'id' | 'revision' | 'status' | 'data'>,
+) {
+  await client.query(
+    'INSERT INTO invoice_revisions(invoice_id, revision, status, data) VALUES ($1, $2, $3, $4)',
+    [revision.id, revision.revision, revision.status, JSON.stringify(revision.data)],
+  )
 }
 export function requireRevision(revision: unknown): asserts revision is number {
   if (!Number.isSafeInteger(revision) || Number(revision) < 1)
@@ -140,9 +151,7 @@ export class InvoiceRepository {
         'Use an idempotency key of 1–200 letters, numbers, dots, colons, underscores or hyphens.',
       )
     const payloadHash = hash(data)
-    const client = await this.database.connect()
-    try {
-      await client.query('BEGIN')
+    return withTransaction(this.database, async (client) => {
       const result = await client.query<InvoiceRow>(
         `INSERT INTO invoice_records(id, owner_id, data, idempotency_key, initial_payload_hash) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (owner_id, idempotency_key) DO NOTHING RETURNING ${fields}`,
         [randomUUID(), owner, JSON.stringify(data), idempotencyKey ?? null, payloadHash],
@@ -160,19 +169,10 @@ export class InvoiceRepository {
             'This import key was already used for different invoice data.',
           )
       } else {
-        await client.query(
-          'INSERT INTO invoice_revisions(invoice_id, revision, status, data) VALUES ($1, 1, $2, $3)',
-          [row.id, 'draft', JSON.stringify(data)],
-        )
+        await appendRevision(client, { id: row.id, revision: 1, status: 'draft', data })
       }
-      await client.query('COMMIT')
       return record(row)
-    } catch (error) {
-      await client.query('ROLLBACK')
-      throw error
-    } finally {
-      client.release()
-    }
+    })
   }
   async update(
     owner: string,
@@ -182,9 +182,7 @@ export class InvoiceRepository {
   ): Promise<InvoiceRecord> {
     requireRevision(revision)
     const data = parseDraft(value)
-    const client = await this.database.connect()
-    try {
-      await client.query('BEGIN')
+    return withTransaction(this.database, async (client) => {
       const result = await client.query<InvoiceRow>(
         `UPDATE invoice_records SET data = $4, revision = revision + 1, updated_at = clock_timestamp() WHERE owner_id = $1 AND id = $2 AND revision = $3 AND status = 'draft' RETURNING ${fields}`,
         [owner, id, revision, JSON.stringify(data)],
@@ -198,24 +196,13 @@ export class InvoiceRepository {
         if (!existing.rowCount) throw new HttpError(404, 'Invoice not found.')
         throw conflict()
       }
-      await client.query(
-        'INSERT INTO invoice_revisions(invoice_id, revision, status, data) VALUES ($1, $2, $3, $4)',
-        [id, row.revision, row.status, JSON.stringify(row.data)],
-      )
-      await client.query('COMMIT')
+      await appendRevision(client, row)
       return record(row)
-    } catch (error) {
-      await client.query('ROLLBACK')
-      throw error
-    } finally {
-      client.release()
-    }
+    })
   }
   async issue(owner: string, id: string, revision: number): Promise<InvoiceRecord> {
     requireRevision(revision)
-    const client = await this.database.connect()
-    try {
-      await client.query('BEGIN')
+    return withTransaction(this.database, async (client) => {
       const result = await client.query<InvoiceRow>(
         `SELECT ${fields} FROM invoice_records WHERE owner_id = $1 AND id = $2 FOR UPDATE`,
         [owner, id],
@@ -225,7 +212,6 @@ export class InvoiceRepository {
       if (row.status === 'issued') {
         if (revision !== row.issued_from_revision && revision !== row.revision)
           throw conflict()
-        await client.query('COMMIT')
         return record(row)
       }
       if (row.revision !== revision) throw conflict()
@@ -259,7 +245,7 @@ export class InvoiceRepository {
         !pdf.subarray(0, 5).equals(Buffer.from('%PDF-'))
       )
         throw new Error('PDF renderer produced an invalid or oversized document.')
-      const checksum = createHash('sha256').update(pdf).digest('hex')
+      const checksum = sha256(pdf)
       const key = `invoices/sha256/${checksum}.pdf`
       await this.archive.put(key, pdf, checksum, `${snapshot.reference}.pdf`)
       const issued = await client.query<InvoiceRow>(
@@ -275,18 +261,14 @@ export class InvoiceRepository {
           revision,
         ],
       )
-      await client.query(
-        'INSERT INTO invoice_revisions(invoice_id, revision, status, data) VALUES ($1, $2, $3, $4)',
-        [id, issued.rows[0].revision, 'issued', JSON.stringify(snapshot)],
-      )
-      await client.query('COMMIT')
+      await appendRevision(client, {
+        id,
+        revision: issued.rows[0].revision,
+        status: 'issued',
+        data: snapshot,
+      })
       return record(issued.rows[0])
-    } catch (error) {
-      await client.query('ROLLBACK')
-      throw error
-    } finally {
-      client.release()
-    }
+    })
   }
   async pdf(owner: string, id: string, disposition: PdfDisposition = 'attachment') {
     const result = await this.database.query<{
@@ -304,10 +286,7 @@ export class InvoiceRepository {
     if (row.status !== 'issued')
       throw new HttpError(409, 'Issue this invoice before downloading its archived PDF.')
     const bytes = await this.archive.get(row.pdf_key)
-    if (
-      bytes.length !== row.pdf_bytes ||
-      createHash('sha256').update(bytes).digest('hex') !== row.pdf_sha256
-    )
+    if (bytes.length !== row.pdf_bytes || sha256(bytes) !== row.pdf_sha256)
       throw new Error('Archived PDF integrity check failed.')
     return {
       bytes,

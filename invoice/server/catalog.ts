@@ -11,6 +11,7 @@ import type {
 import type { Invoice, Party, Payment } from '../model'
 import { HttpError } from './errors'
 import { parseDraft } from './repository'
+import { withTransaction } from './transaction'
 
 const entryInput = z
   .object({
@@ -140,9 +141,7 @@ export class CatalogRepository {
       return entry(result.rows[0])
     }
     // Serialize the per-owner limit so concurrent requests cannot bypass it.
-    const client = await this.database.connect()
-    try {
-      await client.query('BEGIN')
+    return withTransaction(this.database, async (client) => {
       await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 1))', [owner])
       const count = await client.query<{ count: string }>(
         'SELECT count(*) FROM invoice_catalog WHERE owner_id = $1',
@@ -157,13 +156,7 @@ export class CatalogRepository {
         `INSERT INTO invoice_catalog(id, owner_id, kind, name, data) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
         [randomUUID(), owner, input.kind, input.name, JSON.stringify(data)],
       )
-      await client.query('COMMIT')
       return entry(result.rows[0])
-    } catch (error) {
-      await client.query('ROLLBACK')
-      throw error
-    } finally {
-      client.release()
-    }
+    })
   }
 }

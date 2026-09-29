@@ -217,6 +217,14 @@ it('issues once under concurrency, assigns transactional numbering and archives 
     data: { reference: 'KM-2026-0001' },
   })
   expect(renderCount - previous).toBe(1)
+  const history = await pool.query(
+    'SELECT revision, status, data FROM invoice_revisions WHERE invoice_id = $1 ORDER BY revision',
+    [draft.id],
+  )
+  expect(history.rows).toEqual([
+    { revision: 1, status: 'draft', data: draft.data },
+    { revision: 2, status: 'issued', data: first.data },
+  ])
   const pdf = await repository.pdf(owner, draft.id)
   expect((await repository.pdf(owner, draft.id)).bytes.equals(pdf.bytes)).toBe(true)
   expect(pdf.checksum).toHaveLength(64)

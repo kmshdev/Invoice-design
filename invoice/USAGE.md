@@ -14,7 +14,7 @@ The authenticated workspace remains an Astro application with a React editor, Po
 
 - `domain/` owns runtime schemas, inferred TypeScript models, money calculations, semantic addresses, and issuance checks. `model.ts` is the public facade for those modules.
 - `application/` owns HTTP contracts, editor state, concurrency handling, and explicit browser recovery/import. It does not calculate taxes or access PostgreSQL directly.
-- `server/` owns authentication, owner-scoped persistence, transactional revisions/numbering, and immutable issued PDFs.
+- `server/` owns authentication, owner-scoped persistence, transactional revisions/numbering, and immutable issued PDFs. `server/transaction.ts` owns connection release, commit, and rollback for invoice, catalog, and migration operations. `server/checksum.ts` supplies the SHA-256 digest used for idempotency, migration verification, and archived PDF integrity; invoice revision inserts share one repository helper.
 - `editor/` owns forms, profile/preset controls, and workspace views. Save and Issue are distinct actions.
 - `components/InvoiceDocument.tsx` and document CSS render validated invoice values; they do not save records. `/template-preview` reads the MDX fixture directly, without accessing saved invoices.
 - The application consumes published dependencies only. It does not depend on copied design-system components, styles, icons, generators, previews, or token tooling.

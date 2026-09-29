@@ -5,7 +5,8 @@ import {
   type S3ClientConfig,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { createHash } from 'node:crypto'
+
+import { sha256 } from './checksum'
 
 export type PdfDisposition = 'inline' | 'attachment'
 
@@ -60,7 +61,7 @@ export class S3PdfStorage implements PdfStorage {
   ) {}
 
   async put(key: string, bytes: Buffer, checksum: string, filename?: string) {
-    if (createHash('sha256').update(bytes).digest('hex') !== checksum)
+    if (sha256(bytes) !== checksum)
       throw new Error('Refusing to archive PDF with a mismatched checksum.')
     try {
       await this.client.send(
@@ -80,7 +81,7 @@ export class S3PdfStorage implements PdfStorage {
         ?.httpStatusCode
       if (status !== 412) throw error
       const existing = await this.get(key)
-      if (createHash('sha256').update(existing).digest('hex') !== checksum)
+      if (sha256(existing) !== checksum)
         throw new Error('PDF archive key already contains different bytes.')
     }
   }
