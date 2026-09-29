@@ -79,8 +79,8 @@
   position: relative;
   z-index: 1;
   display: grid;
-  width: 84px;
-  height: 84px;
+  width: 140px;
+  height: 140px;
   margin: 0;
   color: var(--feature-color);
   place-items: center;
@@ -88,10 +88,11 @@
   transition: transform 240ms var(--ease-settle);
 }
 
-.shardlane-site .feature-icon svg {
-  width: 84px;
-  height: 84px;
-  stroke-width: 1.25;
+.shardlane-site .feature-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .shardlane-site .feature-copy {
@@ -103,12 +104,15 @@
 }
 
 .shardlane-site .feature-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 16px;
   color: var(--feature-color);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   line-height: 1.2;
   text-transform: uppercase;
 }

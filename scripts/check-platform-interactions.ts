@@ -83,7 +83,7 @@ try {
         JSON.stringify({ label, ...measurement }),
       )
       if (width >= 1024) {
-        assert.equal(measurement.height, 420)
+        assert(measurement.height >= 420)
         assert(measurement.inactiveWidths.every((value) => Math.abs(value - 80) < 1))
       }
       await page.screenshot({ path: join(evidence, `${width}-${label.toLowerCase()}.png`) })

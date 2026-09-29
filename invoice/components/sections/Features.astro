@@ -1,19 +1,11 @@
 ---
-import {
-  Add12Icon,
-  Checkmark12Icon,
-  Copy12Icon,
-  Document16Icon,
-  DownloadOutline12Icon,
-  Moon12Icon,
-  Sun12Icon,
-  Terminal16Icon,
-} from '@oxide/design-system/icons/react'
+import { Document16Icon } from '@oxide/design-system/icons/react'
 import '../feature-grid.css'
+import '../dither-feedback.css'
 
 const features = [
   {
-    icon: Document16Icon,
+    artwork: 'live-invoice-preview',
     tone: 'blue',
     title: 'Live invoice preview',
     description:
@@ -22,7 +14,7 @@ const features = [
     action: 'Preview invoice',
   },
   {
-    icon: Checkmark12Icon,
+    artwork: 'precise-calculations',
     tone: 'green',
     title: 'Precise calculations',
     description:
@@ -31,7 +23,7 @@ const features = [
     action: 'Create invoice',
   },
   {
-    icon: Add12Icon,
+    artwork: 'international-details',
     tone: 'amber',
     title: 'International details',
     description:
@@ -40,7 +32,7 @@ const features = [
     action: 'Create invoice',
   },
   {
-    icon: Copy12Icon,
+    artwork: 'reusable-drafts',
     tone: 'blue',
     title: 'Reusable drafts',
     description:
@@ -49,7 +41,7 @@ const features = [
     action: 'Open workspace',
   },
   {
-    icon: DownloadOutline12Icon,
+    artwork: 'pdf-json-exports',
     tone: 'green',
     title: 'PDF and JSON exports',
     description:
@@ -58,7 +50,7 @@ const features = [
     action: 'Create invoice',
   },
   {
-    icon: Moon12Icon,
+    artwork: 'light-dark-paper',
     tone: 'amber',
     title: 'Light and dark paper',
     description:
@@ -67,7 +59,7 @@ const features = [
     action: 'Create invoice',
   },
   {
-    icon: Sun12Icon,
+    artwork: 'no-account-creation',
     tone: 'blue',
     title: 'No-account creation',
     description:
@@ -76,7 +68,7 @@ const features = [
     action: 'Create invoice',
   },
   {
-    icon: Checkmark12Icon,
+    artwork: 'account-backed-records',
     tone: 'green',
     title: 'Account-backed records',
     description:
@@ -85,7 +77,7 @@ const features = [
     action: 'Open workspace',
   },
   {
-    icon: Terminal16Icon,
+    artwork: 'open-source-foundation',
     tone: 'amber',
     title: 'Open-source foundation',
     description:
@@ -109,16 +101,26 @@ const features = [
     </p>
     <div class="feature-grid">
       {
-        features.map(({ icon: Icon, tone, title, description, href, action }) => (
+        features.map(({ artwork, tone, title, description, href, action }) => (
           <article class="feature-cell">
             <a class:list={['feature-link', `feature-link--${tone}`]} href={href}>
               <div class="feature-artwork" aria-hidden="true">
                 <div class="feature-icon">
-                  <Icon />
+                  <img
+                    src={`/images/features/${artwork}.webp`}
+                    width="320"
+                    height="320"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
               </div>
               <div class="feature-copy">
                 <p class="feature-action">
+                  <span class="feature-action-icon" data-dither aria-hidden="true">
+                    <Document16Icon />
+                  </span>
                   {action} <span aria-hidden="true">↗</span>
                 </p>
                 <h3>{title}</h3>
@@ -131,3 +133,7 @@ const features = [
     </div>
   </div>
 </section>
+
+<script>
+  import '../dither-feedback'
+</script>

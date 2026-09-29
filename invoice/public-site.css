@@ -157,58 +157,6 @@
   width: 16px;
   height: 16px;
 }
-.nav-pixels {
-  position: absolute;
-  inset: 7px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  pointer-events: none;
-}
-.nav-pixels i {
-  background: currentColor;
-  opacity: 0;
-}
-@keyframes nav-grain {
-  0% {
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.85;
-  }
-  65% {
-    opacity: 0.2;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes nav-resolve {
-  0% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .nav-tab:hover .nav-pixels i {
-    animation: nav-grain 360ms steps(3, end) calc(var(--pixel-index) * 18ms);
-  }
-  .nav-tab:hover .nav-glyph {
-    animation: nav-resolve 360ms steps(4, end);
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .nav-tab:focus-visible .nav-pixels i {
-    animation: nav-grain 360ms steps(3, end) calc(var(--pixel-index) * 18ms);
-  }
-  .nav-tab:focus-visible .nav-glyph {
-    animation: nav-resolve 360ms steps(4, end);
-  }
-}
 .nav-tab:hover .nav-mark,
 .nav-tab:focus-visible .nav-mark {
   color: var(--color-foreground);
@@ -346,9 +294,9 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  min-height: 36px;
+  min-height: 44px;
   padding: 7px 10px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   background: color-mix(in srgb, var(--color-primary) 9%, var(--color-stage));
   border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
   font-family: var(--font-mono);
@@ -556,12 +504,14 @@
 .workflow-track {
   display: flex;
   gap: 12px;
-  height: 420px;
+  min-height: 420px;
   margin-top: 32px;
   container-type: inline-size;
 }
 .workflow-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 0 0 80px;
   min-width: 0;
   overflow: hidden;
@@ -645,10 +595,17 @@
 }
 .workflow-content {
   position: relative;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-height: 420px;
   width: calc(100cqw - 184px);
   padding: 108px 48px 40px;
   animation: workflow-arrive var(--motion-expand) var(--ease-settle);
+}
+.workflow-content[hidden] {
+  display: none;
 }
 .workflow-content h3 {
   position: relative;
@@ -675,9 +632,9 @@
   color: var(--color-stage);
 }
 .workflow-detail {
-  position: absolute;
-  bottom: 36px;
-  left: 48px;
+  position: relative;
+  margin-top: auto;
+  padding-top: 24px;
   font: 10px var(--font-mono);
 }
 .workflow-watermark {
@@ -824,6 +781,10 @@
   gap: 20px;
 }
 .preview-note a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
   color: var(--color-primary);
 }
 .tiers {
@@ -849,7 +810,10 @@
   color: var(--color-muted-foreground);
 }
 .tier-list a {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
   margin-top: 16px;
   color: var(--color-primary);
   font-size: 12px;
@@ -949,6 +913,7 @@
   padding-block: 100px 120px;
 }
 .footer-brand .wordmark {
+  min-height: 44px;
   font-size: 48px;
 }
 .footer-brand .wordmark span {
@@ -977,7 +942,8 @@
   align-items: center;
 }
 .footer-bottom a {
-  min-height: 32px;
+  min-height: 44px;
+  min-width: 44px;
   display: inline-flex;
   align-items: center;
 }
@@ -1028,7 +994,8 @@
   }
   .workflow-card[data-active='true'] {
     flex: none;
-    height: 420px;
+    height: auto;
+    min-height: 420px;
   }
   .workflow-selector,
   .workflow-card[data-active='true'] .workflow-selector {
@@ -1049,10 +1016,6 @@
   }
   .workflow-content h3 {
     font-size: 28px;
-  }
-  .workflow-detail {
-    left: 32px;
-    bottom: 32px;
   }
 }
 @media (max-width: 1200px) {
@@ -1113,8 +1076,7 @@
   .workflow-content h3 {
     font-size: 28px;
   }
-  .workflow-card[data-active='true'] .workflow-selector,
-  .workflow-detail {
+  .workflow-card[data-active='true'] .workflow-selector {
     left: 32px;
   }
 }
@@ -1168,7 +1130,7 @@
   }
   .hero-announcement {
     font-size: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     gap: 8px;
   }
   .hero h1 {
@@ -1185,8 +1147,9 @@
   .hero-actions .button {
     flex: 1;
   }
-  .workflow-card[data-active='true'] {
-    height: 480px;
+  .workflow-card[data-active='true'],
+  .workflow-content {
+    min-height: 480px;
   }
   .workflow-content {
     padding: 92px 24px 40px;
@@ -1199,7 +1162,6 @@
     line-height: 20px;
   }
   .workflow-detail {
-    left: 24px;
     font-size: 9px;
   }
   .workflow-selector,

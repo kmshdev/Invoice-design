@@ -17,7 +17,7 @@ page.on('pageerror', (error) => errors.push(error.message))
 try {
   for (const width of [320, 390, 768, 1105, 1800]) {
     await page.setViewportSize({ width, height: 1048 })
-    await page.goto(base.href)
+    await page.goto(base.href, { waitUntil: 'networkidle' })
     await page.evaluate(() => document.fonts.ready)
     const header = await page.locator('.site-header').boundingBox()
     assert.equal(header?.height, 62)
@@ -51,34 +51,33 @@ try {
         .click()
       assert.equal(await page.locator('.nav-menu').getAttribute('open'), null)
     }
-    for (const name of ['Browser drafts', 'Portable JSON', 'A4 documents', 'Self-hosted']) {
-      await page.getByRole('tab', { name, exact: false }).click()
-      assert.equal(
-        await page.getByRole('tab', { name, exact: false }).getAttribute('aria-selected'),
-        'true',
-      )
-      assert.equal(await page.getByRole('tabpanel').count(), 1)
+    const flow = page.locator('.invoice-flow')
+    await flow.evaluate((element) =>
+      window.scrollTo(0, element.getBoundingClientRect().top + scrollY - 70),
+    )
+    await page.locator('.invoice-flow[data-ready="true"]').waitFor()
+    for (const [name, href] of [
+      ['JSON source', 'data:application/json'],
+      ['Local draft', '/create'],
+      ['PDF document', '/template-preview'],
+    ]) {
+      const button = flow.getByRole('button', { name: new RegExp(name) })
+      await button.focus()
+      await page.keyboard.press('Enter')
+      assert.equal(await button.getAttribute('aria-pressed'), 'true')
+      assert((await flow.locator('.flow-actions a').getAttribute('href'))?.startsWith(href))
     }
-    await page.getByRole('tab', { name: 'Self-hosted', exact: false }).focus()
-    await page.keyboard.press('Home')
-    assert.equal(
-      await page
-        .getByRole('tab', { name: 'Browser drafts', exact: false })
-        .getAttribute('aria-selected'),
-      'true',
+    await flow.getByRole('button', { name: 'Light paper', exact: true }).click()
+    assert.equal(await page.locator('.flow-paper').getAttribute('data-light'), 'true')
+    await flow.getByRole('button', { name: 'Dark paper', exact: true }).click()
+    assert.equal(await page.locator('.flow-paper').getAttribute('data-light'), 'false')
+    assert.equal(await flow.locator('.flow-line').count(), 6)
+    await flow.getByRole('button', { name: 'Replay invoice flow' }).click()
+    await page.waitForFunction(() =>
+      Array.from(document.querySelectorAll('.flow-signal')).every(
+        (path) => Number(path.getAttribute('stroke-dasharray')?.split(' ')[0]) > 0.95,
+      ),
     )
-    await page.keyboard.press('ArrowRight')
-    assert.equal(
-      await page
-        .getByRole('tab', { name: 'Portable JSON', exact: false })
-        .getAttribute('aria-selected'),
-      'true',
-    )
-    await page.getByRole('tab', { name: 'A4 documents', exact: false }).click()
-    await page.getByRole('button', { name: 'Light', exact: true }).click()
-    assert.equal(await page.locator('.ownership-paper').getAttribute('data-light'), 'true')
-    await page.getByRole('button', { name: 'Dark', exact: true }).click()
-    assert.equal(await page.locator('.ownership-paper').getAttribute('data-light'), 'false')
     const measured = await page.evaluate(() => ({
       width: innerWidth,
       overflow: document.documentElement.scrollWidth > innerWidth,
@@ -122,34 +121,62 @@ try {
         '* {line-height:1.5!important;letter-spacing:0.12em!important;word-spacing:0.16em!important} p {margin-bottom:2em!important}',
     })
     const overflow = await page
-      .locator('.ownership-demo')
+      .locator('.invoice-flow')
       .evaluate((element) => element.scrollWidth > element.clientWidth + 1)
     assert.equal(overflow, false, `Ownership spacing overflow at ${width}`)
+    await flow.getByRole('button', { name: /JSON source/ }).click()
+    const clipped = await flow
+      .locator('.flow-actions a, .flow-paper, .flow-file, .flow-input')
+      .evaluateAll((elements) =>
+        elements
+          .filter((element) => element.scrollWidth > element.clientWidth + 1)
+          .map((element) => element.className),
+      )
+    assert.deepEqual(clipped, [], `Flow text must fit with spacing overrides at ${width}`)
   }
   await page.setViewportSize({ width: 1105, height: 1048 })
   await page.goto(base.href)
   const source = page
     .locator('.nav-links')
     .getByRole('link', { name: 'Source', exact: true })
+  const mask = source.locator('[data-morph-icon]')
   await source.hover()
   assert.notEqual(
-    await source
-      .locator('.nav-pixels i')
-      .first()
-      .evaluate((element) => getComputedStyle(element).animationName),
+    await mask.evaluate((element) => getComputedStyle(element).maskImage),
     'none',
   )
+  for (const target of [source, page.locator('.feature-link').first()]) {
+    await target.hover()
+    const canvas = target.locator('canvas.dither-feedback')
+    await canvas.waitFor()
+    await page.waitForFunction(
+      (element) => {
+        const canvas = element as HTMLCanvasElement
+        return canvas
+          .getContext('2d')!
+          .getImageData(0, 0, canvas.width, canvas.height)
+          .data.some((value, index) => index % 4 === 3 && value > 0)
+      },
+      await canvas.elementHandle(),
+    )
+    assert.equal(
+      await canvas.evaluate(
+        (element) => getComputedStyle(element.parentElement!).maskImage,
+      ),
+      'none',
+      'Dither host must not be clipped by the icon mask',
+    )
+  }
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.mouse.move(0, 0)
   await source.hover()
-  assert.equal(
-    await source
-      .locator('.nav-pixels i')
-      .first()
-      .evaluate((element) => getComputedStyle(element).animationName),
-    'none',
-  )
-  await page.getByRole('tab', { name: 'Portable JSON', exact: false }).click()
+  await page
+    .locator('.invoice-flow')
+    .evaluate((element) =>
+      window.scrollTo(0, element.getBoundingClientRect().top + scrollY - 70),
+    )
+  await page.getByRole('button', { name: /JSON source/ }).click()
+  assert(await page.getByRole('button', { name: 'Replay invoice flow' }).isDisabled())
   const downloadPromise = page.waitForEvent('download')
   await page.getByRole('link', { name: 'Download example JSON', exact: true }).click()
   const download = await downloadPromise
@@ -157,7 +184,7 @@ try {
   assert.deepEqual(errors, [])
   await writeFile(join(output, 'measurements.json'), JSON.stringify(findings, null, 2))
   console.log(
-    `Section redesign passed: header geometry, mobile menu, keyboard tabs, paper modes, JSON download, feature grid, text spacing, reduced motion, axe-core. Evidence: ${output}`,
+    `Section redesign passed: header geometry, live masks, mobile menu, keyboard format selection, paper modes, flow replay, JSON download, feature grid, text spacing, reduced motion, axe-core. Evidence: ${output}`,
   )
 } finally {
   await browser.close()

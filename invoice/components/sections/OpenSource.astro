@@ -1,31 +1,9 @@
 ---
-import OwnershipDemo from '../OwnershipDemo'
+import InvoiceFlow from '../invoice-flow'
 import { frontmatter } from '../../content/invoice.mdx'
 import { parseInvoice } from '../../model'
-import '../ownership.css'
+import '../invoice-flow.css'
 const example = parseInvoice(JSON.stringify(frontmatter))
-const proofs = [
-  {
-    value: 'Local first',
-    label: 'Browser drafts',
-    detail: 'Start without an account. Drafts stay on this device.',
-  },
-  {
-    value: 'JSON + PDF',
-    label: 'Portable formats',
-    detail: 'Keep the editable source and the final document.',
-  },
-  {
-    value: 'MPL-2.0',
-    label: 'Open-source license',
-    detail: 'Inspect the code, adapt the workflow, and self-host.',
-  },
-  {
-    value: 'Your choice',
-    label: 'Cloud workspace',
-    detail: 'Guest drafts only move to the cloud when you import them.',
-  },
-]
 ---
 
 <section
@@ -33,42 +11,21 @@ const proofs = [
   id="open-source"
   aria-labelledby="ownership-title"
 >
-  <div class="section-rail"><p class="eyebrow section-inner">// OPEN BY DESIGN</p></div>
   <div class="section-inner ownership-heading">
-    <div>
-      <h2 id="ownership-title"><span>Your documents.</span> Not our walled garden.</h2><p
-        class="section-description"
-      >
-        Browser drafts, portable files, or your own instance. Keep control of the work.
-      </p>
-    </div>
-    <a class="button primary" href="https://github.com/kmshdev/Invoice-design"
+    <h2 id="ownership-title"><span>Your work.</span> Your invoice. Your files.</h2>
+    <p class="section-description">
+      From the first line item to the final document.<br />Keep the source, the PDF, and the
+      next draft.
+    </p>
+  </div>
+  <InvoiceFlow client:visible invoice={example} />
+  <div class="section-inner ownership-bottom">
+    <p>
+      <strong>Open source. Yours to run.</strong> Inspect, adapt, and self-host under MPL-2.0.
+      Browser drafts stay on your device; cloud import is always your choice.
+    </p>
+    <a class="button secondary" href="https://github.com/kmshdev/Invoice-design"
       >Explore the source <span aria-hidden="true">↗</span></a
     >
-  </div>
-  <div class="section-inner"><OwnershipDemo client:load invoice={example} /></div>
-  <div class="ownership-proof">
-    <div class="ownership-proof-copy">
-      <h3><span>Open source.</span><br />Yours to run.</h3><p>
-        Want your own workspace? Inspect, adapt, and self-host Shardlane under MPL-2.0.
-      </p>
-    </div>
-    <dl class="ownership-proof-rows">
-      {
-        proofs.map((proof, index) => (
-          <div class="ownership-proof-row" style={`--proof-index:${index}`}>
-            <>
-              <dt>
-                <>
-                  <strong>{proof.value}</strong>
-                  <span>{proof.label}</span>
-                </>
-              </dt>
-              <dd>{proof.detail}</dd>
-            </>
-          </div>
-        ))
-      }
-    </dl>
   </div>
 </section>

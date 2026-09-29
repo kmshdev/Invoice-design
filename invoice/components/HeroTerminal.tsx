@@ -6,6 +6,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 
 import type { Invoice } from '../model'
+import ContinuityText from './continuity-text'
 
 export default function HeroTerminal({ invoice }: { invoice: Invoice }) {
   const [status, setStatus] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle')
@@ -94,7 +95,7 @@ export default function HeroTerminal({ invoice }: { invoice: Invoice }) {
         >
           <span aria-hidden="true">›</span>
           <span role="status" aria-live="polite">
-            {label}
+            <ContinuityText>{label}</ContinuityText>
           </span>
           <span className="copy-glyph" aria-hidden="true">
             {status === 'copied' ? <Checkmark12Icon /> : <Copy12Icon />}

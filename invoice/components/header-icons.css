@@ -1,0 +1,51 @@
+.morph-icon {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.morph-icon.is-morph-ready {
+  background: currentColor;
+}
+
+.morph-icon.is-morph-ready > svg {
+  opacity: 0;
+}
+
+.nav-menu-morph {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.nav-mark[data-dither],
+.nav-dashboard-mark[data-dither],
+.nav-menu-morph[data-dither],
+.mobile-nav-mark[data-dither] {
+  position: relative;
+  isolation: isolate;
+}
+
+.nav-menu[open] .nav-menu-morph .menu-open-icon,
+.nav-menu-morph .menu-close-icon {
+  display: none;
+}
+
+.nav-menu[open] .nav-menu-morph .menu-close-icon {
+  display: block;
+}
+
+.mobile-nav-mark {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.mobile-nav-mark svg,
+.nav-dashboard-mark svg {
+  width: 16px;
+  height: 16px;
+}

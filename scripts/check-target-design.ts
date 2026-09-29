@@ -103,10 +103,9 @@ try {
   )
   await page.getByText('Can I make an invoice without an account?', { exact: true }).click()
   await page.getByRole('link', { name: 'Dashboard', exact: true }).click()
+  await page.getByRole('heading', { name: 'Invoice editor', exact: true }).waitFor()
   assert.equal(new URL(page.url()).pathname, '/create')
-  const useExample = page.getByRole('button', { name: 'Use example', exact: true })
-  await useExample.waitFor()
-  await useExample.click()
+  await page.getByRole('button', { name: 'Use example', exact: true }).click()
   await page.getByText('Aster Demo Labs', { exact: true }).first().waitFor()
   await page.evaluate(() => document.fonts.ready)
   assert.equal(
