@@ -9,20 +9,20 @@ export const prerender = true
 const invoice = parseInvoice(JSON.stringify(frontmatter))
 ---
 
-<StudioLayout title="Template preview · Invoice Studio">
+<StudioLayout title="Template preview · Shardlane">
   <header class="template-toolbar">
     <div>
       <h1>Template preview</h1>
       <p>The MDX template, independent of saved invoices and local drafts.</p>
     </div>
     <nav aria-label="Template actions">
-      <a class="btn btn--outline" href="/">Open invoice editor</a>
+      <a class="btn btn--outline" href="/create">Open invoice editor</a>
       <button class="btn btn--primary" type="button" data-print-template
         >Print template</button
       >
     </nav>
   </header>
-  <main class="template-document" aria-label="MDX template document">
+  <main id="main" class="template-document" aria-label="MDX template document">
     <InvoiceDocument invoice={invoice} light={false} client:load />
   </main>
 </StudioLayout>

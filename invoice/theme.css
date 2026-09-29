@@ -1,0 +1,137 @@
+@import 'tailwindcss';
+@import '@stisla/style/theme.css';
+@import '@stisla/style/button.css';
+@import '@stisla/style/table.css';
+
+@font-face {
+  font-family: 'Hyperlegible';
+  src: url('/fonts/hyperlegible-sans.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hyperlegible';
+  src: url('/fonts/hyperlegible-sans-bold.woff2') format('woff2');
+  font-weight: 600 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Berkeley Mono';
+  src: url('/fonts/berkeley-mono-tx02.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* One Stisla theme for the public site and workspace. Document colors stay isolated. */
+:root:root {
+  --color-background: #000;
+  --color-surface: #121212;
+  --color-surface-2: #090909;
+  --color-surface-3: #242424;
+  --color-foreground: #ededed;
+  --color-muted-foreground: #aeaeae;
+  --color-border: #282828;
+  --color-border-strong: #363636;
+  --color-primary: #a080f8;
+  --color-primary-foreground: #100c18;
+  --color-primary-emphasis: #bca5fb;
+  --color-accent: #211d2c;
+  --color-accent-foreground: var(--color-foreground);
+  --color-success-emphasis: #8ec9a4;
+  --color-danger-emphasis: #ffa2a2;
+  --color-warning-emphasis: #e7c38c;
+  --color-ring: var(--color-primary);
+  --font-sans: 'Hyperlegible', Arial, sans-serif;
+  --font-mono: 'Berkeley Mono', monospace;
+  --radius: 4px;
+  --radius-outer: 4px;
+  --nested-inset: 4px;
+  --radius-inner: 0px;
+  --motion-feedback: 160ms;
+  --motion-expand: 320ms;
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --color-stage: #0f0f0f;
+  --color-terminal: #0a0a0a;
+  --color-code-key: #ff827c;
+  --color-code-value: #82bc8c;
+  --color-workflow-green: #18e299;
+  --color-workflow-orange: #ff4d00;
+  --color-workflow-violet: #9575ec;
+  --color-on-workflow: #fff;
+  --color-window-red: #ff5f57;
+  --color-window-yellow: #febc2e;
+  --color-window-green: #28c840;
+  --color-feature-blue: #91a7ff;
+  --color-feature-green: #74d6a3;
+  --color-feature-amber: #fbb56d;
+  --color-feature-blue-surface: #260f20;
+  --color-feature-green-surface: #181124;
+  --color-feature-amber-surface: #201d17;
+  --color-proof-lavender: #a175ff;
+  --color-proof-pink: #ffe8fa;
+  --color-proof-orchid: #d698ff;
+  --color-proof-magenta: #f55dd0;
+  --color-proof-ink: #1a0a2e;
+  --site-header-height: 62px;
+  --site-frame: 1440px;
+  --site-content: 1260px;
+  --surface-default: var(--color-background);
+  --surface-raise: var(--color-surface);
+  --surface-secondary: var(--color-surface-2);
+  --surface-tertiary: var(--color-surface-3);
+  --surface-hover: var(--color-accent);
+  --content-default: var(--color-foreground);
+  --content-raise: var(--color-foreground);
+  --content-secondary: var(--color-muted-foreground);
+  --content-tertiary: var(--color-muted-foreground);
+  --content-error: var(--color-danger-emphasis);
+  --content-notice: var(--color-warning-emphasis);
+  --content-success: var(--color-success-emphasis);
+  --stroke-default: var(--color-border-strong);
+  --stroke-raise: var(--color-border-strong);
+  --stroke-secondary: var(--color-border);
+  --stroke-notice: var(--color-warning-emphasis);
+  --app-accent: var(--color-primary);
+  --app-accent-fill: var(--color-primary);
+  color: var(--color-foreground);
+  background: var(--color-background);
+  color-scheme: dark;
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  font-size: 16px;
+}
+:root .button {
+  --button-radius: 0px;
+  --button-bg: var(--color-surface);
+  --button-color: var(--color-foreground);
+  --button-border-color: var(--color-border-strong);
+  --button-inset-shadow-color: transparent;
+  --button-font-weight: 400;
+  --button-overlay-strength: 0.12;
+  --button-font-size: 12px;
+  --button-height: 44px;
+  --button-padding-inline: 20px;
+}
+:root .button.primary {
+  --button-bg: var(--color-primary);
+  --button-color: var(--color-primary-foreground);
+  --button-border-color: var(--color-primary);
+}
+:root .button.secondary {
+  --button-bg: var(--color-surface-2);
+}
+:root .button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

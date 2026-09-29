@@ -167,7 +167,7 @@ describe('Deterministic MDX template preview', () => {
       /localStorage|sessionStorage|InvoiceStudio|import App|application\//,
     )
     expect(page).toContain('aria-label="Template actions"')
-    expect(page).toContain('href="/"')
+    expect(page).toContain('href="/create"')
     expect(page).toContain('window.print()')
   })
 })

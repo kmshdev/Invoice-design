@@ -1,0 +1,390 @@
+.ownership-heading {
+  padding-block: 64px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.ownership-heading h2 span,
+.ownership-proof-copy h3 span {
+  color: var(--color-muted-foreground);
+}
+.ownership-heading .button {
+  flex: none;
+}
+.ownership-heading .section-description {
+  max-width: 760px;
+}
+.ownership-demo {
+  display: grid;
+  grid-template-columns: 24% minmax(0, 1fr);
+  border: 1px solid var(--color-border);
+  min-height: 420px;
+}
+.ownership-tabs {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 16px;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+.ownership-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  min-height: 56px;
+  padding: 12px;
+  border: 0;
+  text-align: left;
+  background: transparent;
+  color: var(--color-muted-foreground);
+  font: 20px / 1.25 var(--font-sans);
+  cursor: pointer;
+}
+.ownership-tabs button > span {
+  font: 11px var(--font-mono);
+  color: var(--color-muted-foreground);
+}
+.ownership-tabs button[aria-selected='true'] {
+  background: var(--color-accent);
+  color: var(--color-foreground);
+}
+.ownership-tabs button[aria-selected='true'] > span {
+  color: var(--color-primary-emphasis);
+}
+.ownership-tabs button:hover {
+  color: var(--color-foreground);
+}
+.ownership-tabs button:focus-visible,
+.ownership-panel:focus-visible,
+.ownership-json:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: -3px;
+}
+.ownership-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 35% minmax(0, 1fr);
+}
+.ownership-panel[hidden] {
+  display: none;
+}
+.ownership-explanation {
+  display: flex;
+  align-items: flex-end;
+  padding: 32px 24px;
+  background: var(--color-stage);
+  border-right: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.ownership-surface {
+  min-width: 0;
+  padding: 24px;
+  background: var(--color-background);
+}
+.ownership-surface-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+.ownership-surface-title h3 {
+  font-size: 22px;
+}
+.ownership-surface-title > span {
+  flex: none;
+  color: var(--color-feature-green);
+  font: 9px var(--font-mono);
+}
+.ownership-invoice-data {
+  margin: 8px 0 24px;
+}
+.ownership-invoice-data > div,
+.ownership-source dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--color-border);
+  font: 12px / 1.5 var(--font-mono);
+}
+.ownership-invoice-data dt,
+.ownership-source dt {
+  color: var(--color-muted-foreground);
+}
+.ownership-invoice-data dd,
+.ownership-source dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.ownership-invoice-data .ownership-total {
+  color: var(--color-primary-emphasis);
+  font-size: 16px;
+}
+.ownership-surface > .button {
+  width: 100%;
+}
+.ownership-json {
+  max-height: 244px;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding-block: 16px;
+  margin: 0 0 16px;
+  color: var(--color-code-value);
+  font: 12px / 1.6 var(--font-mono);
+}
+.ownership-paper-actions {
+  display: flex;
+  margin-block: 16px;
+}
+.ownership-paper-actions .button {
+  flex: 1;
+}
+.ownership-paper-actions .button[aria-pressed='true'] {
+  --button-bg: var(--color-accent);
+  --button-border-color: var(--color-primary);
+}
+.ownership-paper {
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px dashed var(--color-border-strong);
+  font: 12px / 1.6 var(--font-mono);
+  background: var(--color-stage);
+}
+.ownership-paper[data-light='true'] {
+  background: var(--color-on-workflow);
+  color: var(--color-stage);
+}
+.ownership-paper > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ownership-paper p {
+  margin-block: 8px;
+  overflow-wrap: anywhere;
+}
+.ownership-paper strong {
+  display: block;
+  margin-top: 20px;
+  text-align: right;
+}
+.ownership-source {
+  padding-block: 24px;
+}
+.ownership-source > svg {
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary);
+}
+.ownership-source > p {
+  margin-top: 12px;
+  font-size: 24px;
+}
+.ownership-source dl {
+  margin-bottom: 0;
+}
+.ownership-proof {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 40px;
+  padding-block: 64px;
+  background: var(--color-stage);
+  margin-top: 64px;
+  border-top: 1px solid var(--color-border);
+}
+.ownership-proof-copy {
+  padding-left: 12.5%;
+  padding-right: 24px;
+}
+.ownership-proof-copy h3 {
+  font-size: 40px;
+  line-height: 1.1;
+}
+.ownership-proof-copy p {
+  margin-top: 24px;
+  max-width: 380px;
+  color: var(--color-muted-foreground);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ownership-proof-rows {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 0;
+}
+.ownership-proof-row {
+  width: calc(100% - var(--proof-index) * 32px);
+  display: grid;
+  grid-template-columns: minmax(100px, 0.85fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--color-proof-lavender);
+  color: var(--color-proof-ink);
+}
+.ownership-proof-row:nth-child(2) {
+  background: var(--color-proof-pink);
+}
+.ownership-proof-row:nth-child(3) {
+  background: var(--color-proof-orchid);
+}
+.ownership-proof-row:nth-child(4) {
+  background: var(--color-proof-magenta);
+}
+.ownership-proof-row dt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ownership-proof-row strong {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+.ownership-proof-row dt span {
+  font-size: 11px;
+  line-height: 1.2;
+}
+.ownership-proof-row dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+@media (min-width: 1500px) {
+  .ownership-proof-row {
+    width: calc(100% - var(--proof-index) * 52px);
+  }
+}
+@media (max-width: 1100px) {
+  .ownership-heading {
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .ownership-tabs {
+    padding-inline: 8px;
+  }
+  .ownership-tabs button {
+    font-size: 18px;
+  }
+  .ownership-explanation {
+    padding: 24px 16px;
+    font-size: 14px;
+  }
+  .ownership-surface {
+    padding: 20px 16px;
+  }
+  .ownership-proof {
+    gap: 24px;
+  }
+  .ownership-proof-row {
+    padding: 16px;
+    gap: 12px;
+    width: calc(100% - var(--proof-index) * 16px);
+  }
+  .ownership-proof-row strong {
+    font-size: 20px;
+  }
+}
+@media (max-width: 900px) {
+  .ownership-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ownership-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ownership-tabs button {
+    min-height: 48px;
+    font-size: 16px;
+  }
+  .ownership-panel {
+    grid-template-columns: 35% minmax(0, 1fr);
+  }
+  .ownership-proof {
+    grid-template-columns: 1fr;
+  }
+  .ownership-proof-copy {
+    padding-inline: 6%;
+  }
+  .ownership-proof-rows {
+    padding-left: 24px;
+  }
+  .ownership-proof-row {
+    grid-template-columns: minmax(112px, 0.7fr) minmax(0, 1.3fr);
+    width: calc(100% - var(--proof-index) * 24px);
+  }
+}
+@media (max-width: 600px) {
+  .ownership-heading {
+    padding-block: 48px 32px;
+  }
+  .ownership-tabs button {
+    font-size: 15px;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+  .ownership-panel {
+    grid-template-columns: 1fr;
+  }
+  .ownership-explanation {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding: 20px;
+  }
+  .ownership-surface {
+    padding: 20px;
+  }
+  .ownership-surface-title h3 {
+    font-size: 20px;
+  }
+  .ownership-invoice-data > div {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ownership-invoice-data dd {
+    text-align: left;
+  }
+  .ownership-proof {
+    padding-block: 48px;
+    margin-top: 32px;
+  }
+  .ownership-proof-copy {
+    padding-inline: 20px;
+  }
+  .ownership-proof-copy h3 {
+    font-size: 30px;
+  }
+  .ownership-proof-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: calc(100% - var(--proof-index) * 12px);
+  }
+  .ownership-proof-row dt {
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ownership-proof-row strong {
+    font-size: 22px;
+  }
+}

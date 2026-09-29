@@ -1,48 +1,7 @@
-@import 'tailwindcss';
-@import '@stisla/style/theme.css';
-@import '@stisla/style/button.css';
-@import '@stisla/style/table.css';
+@import './theme.css';
 @import './typography.css';
 @import './editor/workspace.css';
 
-@font-face {
-  font-family: 'Berkeley Mono';
-  src: url('/fonts/berkeley-mono-tx02.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-:root {
-  --surface-default: var(--color-background);
-  --surface-raise: var(--color-surface);
-  --surface-secondary: var(--color-surface-2);
-  --surface-tertiary: var(--color-surface-3);
-  --surface-hover: var(--color-accent);
-  --content-default: var(--color-foreground);
-  --content-raise: var(--color-foreground);
-  --content-secondary: var(--color-muted-foreground);
-  --content-tertiary: var(--color-muted-foreground);
-  --content-error: var(--color-danger-emphasis);
-  --content-notice: var(--color-warning-emphasis);
-  --content-success: var(--color-success-emphasis);
-  --stroke-default: var(--color-border-strong);
-  --stroke-raise: var(--color-border-strong);
-  --stroke-secondary: var(--color-border);
-  --stroke-notice: var(--color-warning);
-  --font-mono: 'Berkeley Mono', monospace;
-  --font-sans: 'Berkeley Mono', monospace;
-  --app-accent: #90b8f8;
-  --app-accent-fill: #c0d8fc;
-  --radius-outer: 16px;
-  --nested-inset: 4px;
-  --radius-inner: calc(var(--radius-outer) - var(--nested-inset));
-  font-family: var(--font-mono);
-  color: var(--content-default);
-  background: var(--surface-default);
-  font-synthesis: none;
-  color-scheme: dark;
-  font-size: 16px;
-}
 * {
   box-sizing: border-box;
 }

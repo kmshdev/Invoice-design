@@ -69,7 +69,7 @@ await context.route('**/api/**', async (route) => {
   return respond({ error: 'Unexpected test request.' }, 400)
 })
 try {
-  await page.goto(new URL('/', base).href)
+  await page.goto(new URL('/workspace', base).href)
   await page.getByRole('heading', { name: 'Select an invoice', exact: true }).waitFor()
   assert.equal(
     await page.locator('.invoice-sheet').count(),

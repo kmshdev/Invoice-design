@@ -1,13 +1,14 @@
 ---
 import '../styles.css'
+import '../platform.css'
 interface Props {
   title?: string
 }
-const { title = 'Invoice Studio' } = Astro.props
+const { title = 'Shardlane' } = Astro.props
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en" class="dark shardlane-app">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,5 +22,5 @@ const { title = 'Invoice Studio' } = Astro.props
     />
     <title>{title}</title>
   </head>
-  <body><slot /></body>
+  <body><a class="skip-link" href="#main">Skip to content</a><slot /></body>
 </html>

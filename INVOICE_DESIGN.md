@@ -2,7 +2,7 @@
 
 ## Scope and implementation
 
-Prioritize the invoice document, not a redesign of the surrounding platform. Use Astro with reusable layout/components and Stisla v3's actual Tailwind v4 tokens and BEM classes where applicable. Preserve working editable content, calculations, local drafts, JSON import/export, and browser PDF export. Keep client-specific statutory data editable and independent from layout, rather than hard-coding it into presentation.
+The invoice document remains governed by this contract. The Shardlane platform expansion is documented in `docs/PLATFORM_DESIGN.md`; it may redesign surrounding chrome without changing the locked document composition. Use Astro with reusable layout/components and Stisla v3's actual Tailwind v4 tokens and BEM classes where applicable. Preserve working editable content, calculations, local drafts, JSON import/export, and browser PDF export. Keep client-specific statutory data editable and independent from layout, rather than hard-coding it into presentation.
 
 Use the purchased TX-02 web font supplied as `Berkeley Mono Variable.woff2`, registered as Berkeley Mono. Dark terminal aesthetic: very dark neutral background, muted labels, white values, consistent text sizes and spacing, tabular numbers and right-aligned financial columns. Use ASCII bracket headings. No CSS borders anywhere in the invoice document: create dividers with font-rendered dashes or box-drawing characters. App chrome is outside this restriction.
 

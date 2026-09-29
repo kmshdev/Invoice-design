@@ -28,10 +28,14 @@
     "astro:format:check": "prettier --config prettier.astro.config.mjs --check \"invoice/**/*.astro\"",
     "start": "tsx scripts/invoice-server.ts start",
     "invoice:editor:test": "tsx scripts/check-invoice-editor.ts",
-    "invoice:pdf:build": "node invoice/pdf/build.mjs"
+    "platform:test": "tsx scripts/check-shardlane.ts",
+    "platform:visual:test": "tsx scripts/check-target-design.ts",
+    "invoice:pdf:build": "node invoice/pdf/build.mjs",
+    "prepare": "vp config"
   },
   "license": "MPL-2.0",
   "devDependencies": {
+    "axe-core": "^4.13.0",
     "@astrojs/check": "^0.9.10",
     "@astrojs/mdx": "^8.0.1",
     "@astrojs/react": "^6.0.5",
@@ -47,7 +51,7 @@
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3",
-    "vite-plus": "0.3.1",
+    "vite-plus": "0.3.2",
     "yaml": "^2.9.0"
   },
   "dependencies": {
@@ -87,8 +91,7 @@
     }
   },
   "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.1",
-    "vitest": "4.1.11",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.2",
     "@vercel/routing-utils": {
       "path-to-regexp": "6.3.0"
     }

@@ -1,0 +1,505 @@
+/* Workspace-only layout and density; shared theme tokens live in theme.css. */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 20;
+  padding: 12px 16px;
+  color: var(--color-primary-foreground);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+@media screen {
+  .shardlane-app .app-shell {
+    grid-template-columns: 224px minmax(0, 1fr);
+    min-height: 100dvh;
+    background: var(--color-background);
+  }
+  .shardlane-app .sidebar {
+    padding: 24px 14px 0;
+    background: var(--color-surface-2);
+    border-right-color: var(--color-border-strong);
+  }
+  .shardlane-app .app-brand {
+    gap: 8px;
+    margin: 0 6px 30px;
+    color: var(--color-foreground);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .brand-symbol {
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+  }
+  .shardlane-app .new-invoice,
+  .shardlane-app .button {
+    min-height: 44px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+  .shardlane-app .new-invoice {
+    margin-bottom: 26px;
+    color: var(--color-primary-foreground);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  .shardlane-app .new-invoice:hover,
+  .shardlane-app .button.primary:hover {
+    background: var(--color-primary-emphasis);
+  }
+  .shardlane-app .button.primary {
+    color: var(--color-primary-foreground);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  .shardlane-app .button.secondary {
+    background: var(--color-surface-2);
+  }
+  .shardlane-app .button.secondary:hover,
+  .shardlane-app .draft-link:hover {
+    background: var(--color-surface-3);
+  }
+  .shardlane-app .template-button {
+    margin-bottom: 8px;
+  }
+  .library-heading,
+  .nav-eyebrow,
+  .recent-heading {
+    padding-inline: 8px;
+    color: var(--color-muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .library-heading {
+    padding-block: 14px;
+  }
+  .shardlane-app .search-field input,
+  .shardlane-app .field input,
+  .shardlane-app .field select,
+  .shardlane-app .field textarea {
+    min-height: 44px;
+    color: var(--color-foreground);
+    background: var(--color-surface-2);
+    border-color: var(--color-border-strong);
+    border-radius: 0;
+  }
+  .shardlane-app .field input:read-only {
+    color: var(--color-muted-foreground);
+    background: var(--color-surface-3);
+  }
+  .shardlane-app .search-field input {
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .shardlane-app .draft-list {
+    gap: 2px;
+    max-height: 34vh;
+  }
+  .shardlane-app .draft-link {
+    padding: 11px 10px;
+    border-radius: 0;
+  }
+  .shardlane-app .draft-link.active {
+    color: var(--color-foreground);
+    background: var(--color-accent);
+    border-color: var(--color-border-strong);
+    box-shadow: inset 2px 0 var(--color-primary);
+  }
+  .draft-dot {
+    background: var(--color-primary);
+    border-radius: 0;
+  }
+  .shardlane-app .draft-reference,
+  .shardlane-app .draft-bottom,
+  .shardlane-app .profile small {
+    font-family: var(--font-mono);
+  }
+  .shardlane-app .sidebar-bottom {
+    padding-top: 28px;
+  }
+  .shardlane-app .profile,
+  .workspace-account {
+    border-top-color: var(--color-border);
+  }
+  .shardlane-app .avatar,
+  .workspace-avatar {
+    color: var(--color-foreground);
+    background: var(--color-surface-3);
+    border-color: var(--color-border-strong);
+    border-radius: 0;
+  }
+
+  .shardlane-app .topbar {
+    height: 64px;
+    padding-inline: 32px;
+    color: var(--color-muted-foreground);
+    background: var(--color-surface-2);
+    border-bottom-color: var(--color-border-strong);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .shardlane-app .save-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .status-dot,
+  .live-dot {
+    background: var(--color-primary);
+    border-radius: 0;
+  }
+  .shardlane-app .workspace-header {
+    padding: 32px 36px 22px;
+    background: var(--color-background);
+  }
+  .guest-shell .section-eyebrow {
+    display: none;
+  }
+  .shardlane-app .workspace-header h1 {
+    color: var(--color-foreground);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .shardlane-app .draft-badge,
+  .shardlane-app .status-pill {
+    color: var(--color-muted-foreground);
+    background: var(--color-surface-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0;
+  }
+  .document-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 36px 14px;
+    padding-top: 14px;
+    color: var(--color-muted-foreground);
+    border-top-color: var(--color-border);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .document-actions > div {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .document-actions button {
+    min-height: 44px;
+    color: var(--color-muted-foreground);
+  }
+  .document-actions button:hover,
+  .workspace-footer a,
+  .library-table td button {
+    color: var(--color-primary);
+  }
+  .shardlane-app .workbench {
+    grid-template-columns: 338px minmax(0, 1fr);
+    margin: 0 36px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    background: var(--color-surface);
+  }
+  .shardlane-app .editor-panel,
+  .shardlane-app .preview-panel {
+    border-radius: 0;
+  }
+  .shardlane-app .editor-toolbar,
+  .shardlane-app .preview-toolbar {
+    min-height: 54px;
+    padding: 10px 18px;
+    background: var(--color-surface);
+    border-color: var(--color-border-strong);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .shardlane-app .editor-tabs {
+    gap: 20px;
+  }
+  .shardlane-app .editor-tabs button {
+    min-height: 44px;
+    padding-block: 12px;
+    font-size: 11px;
+  }
+  .shardlane-app .editor-body {
+    height: 650px;
+    padding: 20px 18px;
+    background: var(--color-surface);
+  }
+  .shardlane-app .form-section h2 {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .shardlane-app .field,
+  .shardlane-app .field > span,
+  .shardlane-app .field-hint {
+    font-size: 11px;
+  }
+  .shardlane-app .preview-panel {
+    min-width: 0;
+    background: var(--color-surface-2);
+    border-left-color: var(--color-border-strong);
+  }
+  .shardlane-app .preview-scroll {
+    height: 702px;
+    padding: 28px 24px 16px;
+    background: var(--color-surface-2);
+  }
+  .shardlane-app .preview-scroll .invoice-sheet {
+    zoom: 0.68;
+  }
+  .shardlane-app .preview-caption,
+  .shardlane-app .paper-size {
+    color: var(--color-muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 9px;
+  }
+  .shardlane-app .preview-summary {
+    padding: 15px 18px;
+    color: var(--color-foreground);
+    background: var(--color-surface);
+    border-top-color: var(--color-border-strong);
+  }
+  .shardlane-app .preview-summary strong {
+    font-family: var(--font-mono);
+  }
+  .shardlane-app .mode-toggle,
+  .shardlane-app .paper-toggle {
+    border-radius: 0;
+    background: var(--color-surface-3);
+  }
+  .shardlane-app .mode-toggle button,
+  .shardlane-app .paper-toggle button {
+    width: 44px;
+    height: 44px;
+  }
+  .shardlane-app .workspace-footer {
+    margin: 0;
+    padding: 20px 36px;
+    color: var(--color-muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+
+  .invoice-library {
+    padding: 0 36px 40px;
+  }
+  .library-metrics {
+    border-color: var(--color-border);
+  }
+  .library-metrics > div {
+    border-left-color: var(--color-border);
+  }
+  .library-metrics span,
+  .library-table th {
+    color: var(--color-muted-foreground);
+  }
+  .library-metrics strong {
+    font-size: 28px;
+    font-weight: 400;
+  }
+  .library-table th {
+    background: var(--color-surface-2);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .library-table th,
+  .library-table td {
+    border-bottom-color: var(--color-border);
+  }
+  .library-table tr:hover td {
+    background: var(--color-surface-3);
+  }
+
+  .login-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(80%, 1240px);
+    height: 72px;
+    margin-inline: auto;
+    padding: 0;
+    border-bottom: 1px solid var(--color-border-strong);
+  }
+  .shardlane-app .login-header .app-brand {
+    margin: 0;
+  }
+  .login-header > a:last-child {
+    color: var(--color-muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .login-header > a:last-child:hover {
+    color: var(--color-primary);
+  }
+  .login-page {
+    min-height: calc(100dvh - 72px);
+    padding: 56px 24px;
+    align-items: center;
+  }
+  .login-form {
+    max-width: 360px;
+    gap: 20px;
+    padding-bottom: 48px;
+  }
+  .login-form .login-heading {
+    margin-bottom: 8px;
+  }
+  .login-form .login-heading h1 {
+    color: var(--color-foreground);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-bottom: 10px;
+  }
+  .login-heading p {
+    color: var(--color-muted-foreground);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .login-form .field > span {
+    font-family: var(--font-mono);
+  }
+  .password-option,
+  .login-divider,
+  .login-form > a {
+    color: var(--color-muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .login-divider::before,
+  .login-divider::after {
+    background: var(--color-border);
+  }
+  .login-form > a:hover {
+    color: var(--color-primary);
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .shardlane-app .workbench {
+    grid-template-columns: 380px minmax(0, 1fr);
+  }
+  .shardlane-app .preview-scroll .invoice-sheet {
+    zoom: 0.76;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .shardlane-app .app-shell {
+    grid-template-columns: 192px minmax(0, 1fr);
+  }
+  .shardlane-app .sidebar {
+    padding-inline: 12px;
+  }
+  .shardlane-app .workbench {
+    grid-template-columns: 310px minmax(0, 1fr);
+    margin-inline: 24px;
+  }
+  .shardlane-app .preview-scroll .invoice-sheet {
+    zoom: 0.55;
+  }
+  .shardlane-app .workspace-header,
+  .shardlane-app .topbar {
+    padding-inline: 24px;
+  }
+  .document-actions {
+    margin-inline: 24px;
+  }
+}
+@media screen and (max-width: 1000px) {
+  .shardlane-app .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shardlane-app .sidebar {
+    display: none;
+  }
+  .shardlane-app .sidebar.mobile-open {
+    display: flex;
+    width: 250px;
+    top: 64px;
+    background: var(--color-surface-2);
+  }
+  .shardlane-app .preview-scroll .invoice-sheet {
+    zoom: 0.62;
+  }
+}
+@media screen and (max-width: 700px) {
+  .shardlane-app .topbar {
+    height: 60px;
+    padding-inline: 16px;
+  }
+  .shardlane-app .sidebar.mobile-open {
+    top: 60px;
+  }
+  .shardlane-app .workspace-header {
+    padding: 24px 16px 20px;
+  }
+  .shardlane-app .workspace-header h1 {
+    font-size: 24px;
+  }
+  .document-actions {
+    margin-inline: 16px;
+    flex-wrap: wrap;
+  }
+  .document-actions > div {
+    gap: 12px;
+  }
+  .shardlane-app .workbench {
+    grid-template-columns: minmax(0, 1fr);
+    margin-inline: 12px;
+  }
+  .shardlane-app .editor-body {
+    height: 440px;
+  }
+  .shardlane-app .preview-scroll {
+    height: 560px;
+    padding: 24px 12px;
+  }
+  .shardlane-app .preview-scroll .invoice-sheet {
+    zoom: 0.41;
+  }
+  .shardlane-app .preview-panel {
+    border-top: 1px solid var(--color-border-strong);
+    border-left: 0;
+  }
+  .shardlane-app .workspace-footer {
+    padding: 20px 16px;
+    flex-wrap: wrap;
+  }
+  .invoice-library {
+    padding-inline: 16px;
+  }
+  .login-header {
+    width: auto;
+    margin-inline: 16px;
+    height: 64px;
+  }
+  .login-header > a:last-child {
+    max-width: 140px;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .login-page {
+    min-height: calc(100dvh - 64px);
+    padding: 40px 24px;
+  }
+}
+@media print {
+  .skip-link,
+  .document-actions,
+  .login-header,
+  .invoice-library {
+    display: none !important;
+  }
+}
