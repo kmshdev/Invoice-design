@@ -10,11 +10,13 @@ export default function CanvasInspector({
   invoice,
   update,
   onSourceDirty,
+  sourceResetKey,
 }: {
   intent: CanvasIntent
   invoice: Invoice
   update: (patch: Partial<Invoice>) => void
   onSourceDirty: (dirty: boolean) => void
+  sourceResetKey: number
 }) {
   const issues = issuanceProblems(invoice)
   if (intent === 'source')
@@ -25,6 +27,7 @@ export default function CanvasInspector({
         issues={issues}
         disabled={false}
         onSourceDirty={onSourceDirty}
+        sourceResetKey={sourceResetKey}
         editableReference
         initialSourceMode
       />

@@ -3,7 +3,7 @@ import {
   Document16Icon as DocumentIcon,
   Terminal16Icon as CodeIcon,
 } from '@oxide/design-system/icons/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { shouldWarnBeforeUnload } from '../application/unloadWarning'
 import {
@@ -27,6 +27,7 @@ export default function InvoiceEditor({
   onSourceDirty,
   editableReference = false,
   initialSourceMode = false,
+  sourceResetKey,
 }: {
   invoice: Invoice
   update: (patch: Partial<Invoice>) => void
@@ -35,12 +36,17 @@ export default function InvoiceEditor({
   onSourceDirty: (dirty: boolean) => void
   editableReference?: boolean
   initialSourceMode?: boolean
+  sourceResetKey?: number
 }) {
   const [section, setSection] = useState<(typeof sections)[number]>('Details')
   const [sourceMode, setSourceMode] = useState(initialSourceMode)
   const [source, setSource] = useState('')
   const [sourceDirty, setSourceDirty] = useState(false)
   const [sourceError, setSourceError] = useState('')
+  const invoiceRef = useRef(invoice)
+  useEffect(() => {
+    invoiceRef.current = invoice
+  }, [invoice])
   useEffect(() => {
     onSourceDirty(sourceDirty)
   }, [sourceDirty, onSourceDirty])
@@ -56,6 +62,12 @@ export default function InvoiceEditor({
   useEffect(() => {
     if (sourceMode && !sourceDirty) setSource(JSON.stringify(invoice, null, 2))
   }, [invoice, sourceDirty, sourceMode])
+  useEffect(() => {
+    if (sourceResetKey === undefined || !sourceMode) return
+    setSource(JSON.stringify(invoiceRef.current, null, 2))
+    setSourceDirty(false)
+    setSourceError('')
+  }, [sourceMode, sourceResetKey])
   function changeMode(next: boolean) {
     if (sourceDirty && !window.confirm('Discard unapplied JSON changes?')) return
     setSourceMode(next)
