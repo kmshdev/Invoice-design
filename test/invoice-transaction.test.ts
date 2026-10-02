@@ -71,12 +71,62 @@ describe('shared transaction lifecycle', () => {
       )
       expect(action).toHaveBeenCalledTimes(phase === 'BEGIN' ? 0 : 1)
       expect(client.release).toHaveBeenCalledOnce()
+      expect(client.release).toHaveBeenCalledWith()
     },
   )
 
-  it('releases the client even when rollback fails', async () => {
+  it.each(['action', 'COMMIT'])(
+    'preserves a %s failure and evicts the client when rollback fails',
+    async (phase) => {
+      const { database, client, query } = fixture()
+      const transactionFailure = new Error(`${phase} failed`)
+      const rollbackFailure = new Error('Rollback failed')
+      if (phase === 'COMMIT') {
+        query
+          .mockImplementationOnce(async () => ({
+            command: '',
+            rowCount: 0,
+            oid: 0,
+            rows: [],
+            fields: [],
+          }))
+          .mockRejectedValueOnce(transactionFailure)
+      }
+      if (phase === 'action') {
+        query.mockImplementationOnce(async () => ({
+          command: '',
+          rowCount: 0,
+          oid: 0,
+          rows: [],
+          fields: [],
+        }))
+      }
+      query.mockRejectedValueOnce(rollbackFailure)
+      const action = vi.fn(async () => {
+        if (phase === 'action') throw transactionFailure
+        return 'saved'
+      })
+
+      const transaction = withTransaction(database, action)
+      await expect(transaction).rejects.toBeInstanceOf(AggregateError)
+      await expect(transaction).rejects.toMatchObject({
+        cause: transactionFailure,
+        errors: [transactionFailure, rollbackFailure],
+      })
+      expect(query.mock.calls).toEqual(
+        phase === 'COMMIT'
+          ? [['BEGIN'], ['COMMIT'], ['ROLLBACK']]
+          : [['BEGIN'], ['ROLLBACK']],
+      )
+      expect(client.release).toHaveBeenCalledOnce()
+      expect(client.release).toHaveBeenCalledWith(rollbackFailure)
+    },
+  )
+
+  it('evicts the client with a wrapped rollback error that is not an Error instance', async () => {
     const { database, client, query } = fixture()
-    const rollbackFailure = new Error('Rollback failed')
+    const transactionFailure = new Error('Action failed')
+    const rollbackFailure = 'Rollback failed'
     query
       .mockImplementationOnce(async () => ({
         command: '',
@@ -88,10 +138,16 @@ describe('shared transaction lifecycle', () => {
       .mockRejectedValueOnce(rollbackFailure)
     await expect(
       withTransaction(database, async () => {
-        throw new Error('Action failed')
+        throw transactionFailure
       }),
-    ).rejects.toBe(rollbackFailure)
+    ).rejects.toMatchObject({
+      cause: transactionFailure,
+      errors: [transactionFailure, rollbackFailure],
+    })
     expect(client.release).toHaveBeenCalledOnce()
+    expect(client.release).toHaveBeenCalledWith(
+      expect.objectContaining({ cause: rollbackFailure }),
+    )
   })
 
   it('propagates connection failures without running the action', async () => {
