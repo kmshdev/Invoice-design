@@ -3,8 +3,11 @@ import type { Dialog, Page } from 'playwright'
 
 async function resetTo(page: Page, base: URL, design: 'focus' | 'ledger') {
   const handleResetDialog = async (dialog: Dialog) => {
-    if (dialog.type() === 'beforeunload') await dialog.accept()
-    else await dialog.dismiss()
+    if (dialog.type() === 'beforeunload') {
+      await dialog.accept()
+      return
+    }
+    await dialog.dismiss()
   }
   page.on('dialog', handleResetDialog)
   try {
