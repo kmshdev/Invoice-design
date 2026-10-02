@@ -5,7 +5,16 @@ import {
 import { motion, useReducedMotion } from 'motion/react'
 import { useState } from 'react'
 
-import { exportProblems, money, totals, type Invoice, type LineItem } from '../model'
+import {
+  displayDate,
+  dueDate,
+  exportProblems,
+  money,
+  totals,
+  validateDraftInvoice,
+  type Invoice,
+  type LineItem,
+} from '../model'
 import type { CanvasDesignProps, CanvasIntent } from './canvas-types'
 import './workflow-designs.css'
 
@@ -29,14 +38,7 @@ function initials(name: string, fallback: string) {
 }
 
 function dueOn(invoice: Invoice) {
-  const date = new Date(`${invoice.issued}T12:00:00`)
-  if (Number.isNaN(date.valueOf())) return 'Due date to confirm'
-  date.setDate(date.getDate() + invoice.paymentTerms)
-  return new Intl.DateTimeFormat('en', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date)
+  return displayDate(dueDate(invoice.issued, invoice.paymentTerms))
 }
 
 function DocumentStage({
@@ -50,6 +52,11 @@ export function FocusDesign(props: CanvasDesignProps) {
   const [showDocument, setShowDocument] = useState(false)
   const index = activeStep(props.activeIntent)
   const next = steps[Math.min(index + 1, steps.length - 1)]
+  const isFinalStep = index === steps.length - 1
+  const selectStep = (intent: CanvasIntent) => {
+    setShowDocument(false)
+    props.onIntent(intent)
+  }
   return (
     <section
       className="canvas-composition design-focus"
@@ -62,7 +69,7 @@ export function FocusDesign(props: CanvasDesignProps) {
             type="button"
             className={stepIndex === index ? 'active' : ''}
             aria-current={stepIndex === index ? 'step' : undefined}
-            onClick={() => props.onIntent(step.intent)}
+            onClick={() => selectStep(step.intent)}
           >
             <span>{String(stepIndex + 1).padStart(2, '0')}</span>
             {step.label}
@@ -70,20 +77,42 @@ export function FocusDesign(props: CanvasDesignProps) {
         ))}
       </nav>
       <div className={`focus-workspace ${showDocument ? 'show-document' : ''}`}>
-        <section className="focus-editor" aria-labelledby="focus-title">
-          <header className="composition-heading">
-            <span>{String(index + 1).padStart(2, '0')} / 05</span>
-            <h2 id="focus-title">{steps[index].title}</h2>
-          </header>
-          <div className="focus-editor-scroll">{props.editor}</div>
-          <footer className="focus-controls">
-            <span>
-              {index === steps.length - 1 ? 'Ready for review' : `Next: ${next.label}`}
-            </span>
-            <button type="button" onClick={() => props.onIntent(next.intent)}>
-              {index === steps.length - 1 ? 'Review work' : `Continue to ${next.label}`}
-            </button>
-          </footer>
+        <section
+          className="focus-editor"
+          aria-labelledby={showDocument ? undefined : 'focus-title'}
+          aria-label={showDocument ? 'Invoice review' : undefined}
+        >
+          <div className="focus-editing-content" aria-hidden={showDocument}>
+            <header className="composition-heading">
+              <span>{String(index + 1).padStart(2, '0')} / 05</span>
+              <h2 id="focus-title">{steps[index].title}</h2>
+            </header>
+            <div className="focus-editor-scroll">{props.editor}</div>
+            <footer className="focus-controls">
+              <span>{isFinalStep ? 'Ready for review' : `Next: ${next.label}`}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isFinalStep) setShowDocument(true)
+                  else selectStep(next.intent)
+                }}
+              >
+                {isFinalStep ? 'Review work' : `Continue to ${next.label}`}
+              </button>
+            </footer>
+          </div>
+          {showDocument && (
+            <div className="focus-review">
+              <header className="composition-heading">
+                <span>Review</span>
+                <h2>Invoice review</h2>
+              </header>
+              <p role="status">Review the invoice proof before exporting it.</p>
+              <button type="button" onClick={() => setShowDocument(false)}>
+                Edit invoice
+              </button>
+            </div>
+          )}
         </section>
         <DocumentStage document={props.document} className="focus-paper" />
       </div>
@@ -131,7 +160,9 @@ function newItem(): LineItem {
 
 export function LedgerDesign(props: CanvasDesignProps) {
   const [showProof, setShowProof] = useState(false)
-  const calculated = totals(props.preview)
+  const calculated = validateDraftInvoice(props.invoice).length
+    ? null
+    : totals(props.invoice)
   const change = (item: LineItem, patch: Partial<LineItem>) =>
     itemPatch(props.invoice, props.update, item, patch)
   return (
@@ -141,7 +172,9 @@ export function LedgerDesign(props: CanvasDesignProps) {
           <span className="eyebrow">Work ledger</span>
           <h2>Billable work</h2>
         </div>
-        <strong>{props.total}</strong>
+        <strong>
+          {calculated ? money(calculated.total, props.invoice.currency) : '—'}
+        </strong>
       </header>
       <div className={`ledger-workspace ${showProof ? 'show-proof' : ''}`}>
         <section className="ledger-items" aria-label="Line items">
@@ -197,7 +230,9 @@ export function LedgerDesign(props: CanvasDesignProps) {
                 <output
                   aria-label={`Amount for ${item.description || `item ${index + 1}`}`}
                 >
-                  {money(calculated.lines[index] ?? 0, props.preview.currency)}
+                  {calculated && calculated.lines[index] !== undefined
+                    ? money(calculated.lines[index], props.invoice.currency)
+                    : '—'}
                 </output>
                 <button
                   className="ledger-delete"
@@ -228,11 +263,13 @@ export function LedgerDesign(props: CanvasDesignProps) {
             <dl>
               <div>
                 <dt>Subtotal</dt>
-                <dd>{money(calculated.subtotal, props.preview.currency)}</dd>
+                <dd>
+                  {calculated ? money(calculated.subtotal, props.invoice.currency) : '—'}
+                </dd>
               </div>
               <div>
-                <dt>{props.preview.taxLabel || 'Tax'}</dt>
-                <dd>{money(calculated.vat, props.preview.currency)}</dd>
+                <dt>{props.invoice.taxLabel || 'Tax'}</dt>
+                <dd>{calculated ? money(calculated.vat, props.invoice.currency) : '—'}</dd>
               </div>
             </dl>
           </div>

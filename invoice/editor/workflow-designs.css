@@ -96,6 +96,12 @@
   flex-direction: column;
   min-height: 0;
 }
+.design-focus .focus-editing-content {
+  display: contents;
+}
+.design-focus .focus-workspace.show-document .focus-editing-content {
+  display: none;
+}
 .design-focus .composition-heading {
   padding: 27px 28px 18px;
   border-bottom: 1px solid var(--canvas-line);
@@ -135,13 +141,28 @@
   color: #5c6473;
 }
 .design-focus .focus-controls button,
-.design-dispatch .dispatch-export {
+.design-dispatch .dispatch-export,
+.design-focus .focus-review button {
   border: 0;
   border-radius: 6px;
   background: var(--canvas-accent);
   color: #fff;
   font-weight: 700;
   padding: 11px 14px;
+}
+.design-focus .focus-review {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: start;
+}
+.design-focus .focus-review p {
+  margin: 22px 28px;
+  color: #5c6473;
+  font-size: 14px;
+}
+.design-focus .focus-review button {
+  margin: 0 28px 28px;
 }
 .design-focus .mobile-document-toggle,
 .design-ledger .mobile-proof-toggle {
@@ -482,9 +503,8 @@
   }
   .design-focus .mobile-document-toggle {
     display: block;
-    position: absolute;
-    right: 15px;
-    bottom: 15px;
+    align-self: end;
+    margin: 12px 14px 14px;
     border: 0;
     border-radius: 6px;
     background: #172031;
